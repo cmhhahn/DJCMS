@@ -428,6 +428,35 @@
                         </Setter>
                     </Style>
 
+
+
+                    <!-- Popup menu button style for the custom app-styled menu -->
+                    <Style x:Key="PopupMenuButtonStyle" TargetType="Button">
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="Foreground" Value="White"/>
+                        <Setter Property="Padding" Value="8,6"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                        <Setter Property="BorderThickness" Value="0"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="bg" Padding="{TemplateBinding Padding}" CornerRadius="4"
+                                            Background="{Binding Background, RelativeSource={RelativeSource TemplatedParent}, FallbackValue=Transparent}">
+                                        <ContentPresenter VerticalAlignment="Center" />
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="bg" Property="Background" Value="{StaticResource PlaylistHoverBrush}"/>
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter TargetName="bg" Property="Background" Value="{StaticResource SpotifyGreenBrush}"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+
                 </ResourceDictionary>
             </Grid.Resources>
 
@@ -495,15 +524,33 @@
                     <TextBlock Text="☰"
                                FontSize="14"
                                Opacity="0.9"/>
-                    <Button.ContextMenu>
-                        <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
-                            <MenuItem Header="Save Playlist"
-                                      cal:Message.Attach="[Event Click] = [Action SavePlaylist()]"/>
-                            <MenuItem Header="Load Playlist"
-                                      cal:Message.Attach="[Event Click] = [Action LoadPlaylist()]"/>
-                        </ContextMenu>
-                    </Button.ContextMenu>
                 </Button>
+
+                <!-- App-styled popup menu that replaces the system context menu -->
+                <Popup x:Name="MenuPopup"
+                       PlacementTarget="{Binding ElementName=MenuButton}"
+                       Placement="Bottom"
+                       StaysOpen="False"
+                       AllowsTransparency="True"
+                       PopupAnimation="Slide"
+                       DataContext="{Binding DataContext, ElementName=MenuButton}">
+                    <Border Background="{StaticResource PlaylistItemBrush}"
+                            CornerRadius="6"
+                            Padding="4"
+                            BorderBrush="{StaticResource SpotifyGreenBrush}"
+                            BorderThickness="1">
+                        <StackPanel>
+                            <Button Style="{StaticResource PopupMenuButtonStyle}"
+                                    cal:Message.Attach="[Event Click] = [Action SavePlaylist()]">
+                                Save Playlist
+                            </Button>
+                            <Button Style="{StaticResource PopupMenuButtonStyle}"
+                                    cal:Message.Attach="[Event Click] = [Action LoadPlaylist()]">
+                                Load Playlist
+                            </Button>
+                        </StackPanel>
+                    </Border>
+                </Popup>
 
                 <StackPanel Orientation="Horizontal"
                             HorizontalAlignment="Right"

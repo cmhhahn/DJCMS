@@ -183,11 +183,10 @@ namespace DJCMS.Views
 
         private void MenuButton_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button btn && btn.ContextMenu != null)
+            // Toggle the custom popup menu instead of using the system context menu
+            if (MenuPopup != null)
             {
-                btn.ContextMenu.PlacementTarget = btn;
-                btn.ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
-                btn.ContextMenu.IsOpen = true;
+                MenuPopup.IsOpen = !MenuPopup.IsOpen;
             }
         }
 
