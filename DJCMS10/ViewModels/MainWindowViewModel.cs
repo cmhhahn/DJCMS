@@ -66,6 +66,20 @@ namespace DJCMS.ViewModels
             AutoLoad();
         }
 
+        private ObservableCollection<PlaylistTrack> _libraryFolder;
+        public ObservableCollection<PlaylistTrack> LibraryFolder
+        {
+            get
+            {
+                return _libraryFolder;
+            }
+            set
+            {
+                _libraryFolder = value;
+                NotifyOfPropertyChange();
+            }
+        }
+
         private ObservableCollection<PlaylistTrack> _tracks;
         public ObservableCollection<PlaylistTrack> Tracks
         {
@@ -206,6 +220,11 @@ namespace DJCMS.ViewModels
             _output.Stop();
         }
 
+        public void AddTrack(Guid trackId)
+        {
+            
+        }
+
         public void Minus(Guid trackId)
         {
             var track = GetListTrack(trackId);
@@ -319,17 +338,25 @@ namespace DJCMS.ViewModels
 
         private void AutoLoad()
         {
+            var libraryFolderPath = @"D:\Music\DJing";
             var folderPath = @"D:\Music\DJing\test";
-            if (!Directory.Exists(folderPath))
-                return;
 
             var supportedExtensions = new[] { ".mp3", ".wav", ".m4a", ".flac", ".aac", ".wma", ".ogg" };
+
             var fileArray = Directory.GetFiles(folderPath)
                 .Where(file => supportedExtensions.Contains(Path.GetExtension(file).ToLowerInvariant()))
                 .OrderBy(file => file)
                 .ToArray();
 
             LoadFiles(fileArray);
+
+            var fileArray2 = Directory.GetFiles(libraryFolderPath)
+                .Where(file => supportedExtensions.Contains(Path.GetExtension(file).ToLowerInvariant()))
+                .OrderBy(file => file)
+                .ToArray();
+
+            LoadFiles(fileArray);
+            LoadLibrary(fileArray2);
         }
 
         public void LoadFiles(string[] files)
@@ -337,6 +364,15 @@ namespace DJCMS.ViewModels
             foreach (var file in files)
             {
                 Tracks.Add(new PlaylistTrack { FilePath = file, GapSeconds = 0 });
+            }
+        }
+
+        public void LoadLibrary(string[] files)
+        {
+            LibraryFolder = new ObservableCollection<PlaylistTrack>();
+            foreach (var file in files)
+            {
+                LibraryFolder.Add(new PlaylistTrack { FilePath = file, GapSeconds = 0 });
             }
         }
 

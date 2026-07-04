@@ -334,7 +334,7 @@
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="ListBoxItem">
-                                    <Grid Background="Transparent">
+                                    <Grid Background="Transparent" Margin="0">
                                         <Grid Margin="2">
                                             <Border x:Name="Border"
                                                     Background="{StaticResource PlaylistItemBrush}"
@@ -349,7 +349,7 @@
                                                     Height="3"
                                                     Background="{StaticResource SpotifyAccentColor}"
                                                     CornerRadius="2"
-                                                    Margin="8,0"
+                                                    Margin="8,-3.5"
                                                     VerticalAlignment="Top"
                                                     Opacity="0"
                                                     Panel.ZIndex="1"
@@ -358,7 +358,7 @@
                                                     Height="3"
                                                     Background="{StaticResource SpotifyAccentColor}"
                                                     CornerRadius="2"
-                                                    Margin="8,0"
+                                                    Margin="8,-3.5"
                                                     VerticalAlignment="Bottom"
                                                     Opacity="0"
                                                     Panel.ZIndex="1"
@@ -410,6 +410,53 @@
                                      Handler="ListBoxItem_DragOver"/>
                         <EventSetter Event="DragLeave"
                                      Handler="ListBoxItem_DragLeave"/>
+                    </Style>
+
+                    <Style x:Key="DarkPlaylistItemStyle2" TargetType="ListBoxItem">
+                        <Setter Property="Padding" Value="4"/>
+                        <Setter Property="Margin" Value="0"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListBoxItem">
+                                    <Grid Background="Transparent" Margin="0">
+                                        <Grid Margin="2">
+                                            <Border x:Name="Border"
+                                                Background="{StaticResource PlaylistItemBrush}"
+                                                CornerRadius="6"
+                                                Padding="{TemplateBinding Padding}"
+                                                BorderThickness="0"
+                                                BorderBrush="Transparent"
+                                                Panel.ZIndex="0">
+                                                <ContentPresenter/>
+                                            </Border>                                            
+                                        </Grid>
+                                    </Grid>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver"
+                             Value="True">
+                                            <Setter TargetName="Border"
+                                Property="Background"
+                                Value="{StaticResource PlaylistHoverBrush}"/>
+                                        </Trigger>
+                                        <Trigger Property="IsSelected"
+                             Value="True">
+                                            <Setter TargetName="Border"
+                                Property="Background"
+                                Value="{StaticResource PlaylistSelectedBrush}"/>
+                                        </Trigger>                                       
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <EventSetter Event="PreviewMouseLeftButtonDown"
+                 Handler="ListBoxItem_PreviewMouseLeftButtonDown"/>
+                        <EventSetter Event="PreviewMouseMove"
+                 Handler="ListBoxItem_PreviewMouseMove"/>                        
+                        <EventSetter Event="DragOver"
+                 Handler="ListBoxItem_DragOver"/>
+                        <EventSetter Event="DragLeave"
+                 Handler="ListBoxItem_DragLeave"/>
                     </Style>
 
                     <Geometry x:Key="PlayGeometry">
@@ -579,16 +626,41 @@
             </Grid>
 
             <Grid x:Name="MainArea" Grid.Row="1">
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="300"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <ListBox x:Name="Library"
+                     Margin="10" Grid.Column="0"
+                     ItemsSource="{Binding LibraryFolder}"
+                     SelectedItem="{Binding LibraryItem}"
+                     ItemContainerStyle="{StaticResource DarkPlaylistItemStyle2}"
+                     Style="{StaticResource DarkPlaylistListBoxStyle}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate DataType="{x:Type local:PlaylistTrack}">                            
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
+                                <Button Content="+" cal:Message.Attach="[Event Click] = [Action AddTrack($dataContext.ID)]" />
+                                <TextBlock Text="{Binding FileName}"
+                                           FontSize="14"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource PlaylistTextBrush}"/>                                
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
                 <ListBox x:Name="Tracks"
-                     Margin="10"
-                     Grid.Row="1"
-                     SelectedItem="{Binding SelectedTrack}"
-                     ItemContainerStyle="{StaticResource DarkPlaylistItemStyle}"
-                     Style="{StaticResource DarkPlaylistListBoxStyle}"
-                     AllowDrop="True"
-                     Drop="ListBox_Drop"
-                     DragOver="ListBox_DragOver">
-                <ListBox.ItemTemplate>
+                         Margin="10" Grid.Column="2"
+                         SelectedItem="{Binding SelectedTrack}"
+                         ItemContainerStyle="{StaticResource DarkPlaylistItemStyle}"
+                         Style="{StaticResource DarkPlaylistListBoxStyle}"
+                         AllowDrop="True"
+                         Drop="ListBox_Drop"
+                         DragOver="ListBox_DragOver">
+                        <ListBox.ItemTemplate>
                     <DataTemplate DataType="{x:Type local:PlaylistTrack}">
                         <Grid Margin="4">
                             <Grid.ColumnDefinitions>
@@ -612,7 +684,7 @@
                                         HorizontalAlignment="Right"
                                         VerticalAlignment="Center">
                                 <Button Content="-"
-                                        cal:Message.Attach="[Event Click] = [Action Minus($dataContext.ID)]"/>
+                                        cal:Message.Attach="[Event Click] = [Action Minus($dataContext.ID)]" />
                                 <Border Background="{StaticResource ControlSurfaceBrush}"
                                         CornerRadius="4"
                                         Padding="6,2">
