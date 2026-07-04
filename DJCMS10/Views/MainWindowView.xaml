@@ -1,7 +1,7 @@
 <Window x:Class="DJCMS.Views.MainWindowView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
         mc:Ignorable="d"
@@ -642,7 +642,15 @@
                     <ListBox.ItemTemplate>
                         <DataTemplate DataType="{x:Type local:PlaylistTrack}">                            
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
-                                <Button Content="+" cal:Message.Attach="[Event Click] = [Action AddTrack($dataContext.ID)]" />
+                                <Button Content="+">
+                                    <i:Interaction.Triggers>
+                                        <i:EventTrigger EventName="Click">
+                                            <cal:ActionMessage MethodName="AddTrack">
+                                                <cal:Parameter Value="{Binding ID}" />
+                                            </cal:ActionMessage>
+                                        </i:EventTrigger>
+                                    </i:Interaction.Triggers>
+                                </Button>
                                 <TextBlock Text="{Binding FileName}"
                                            FontSize="14"
                                            FontWeight="SemiBold"
@@ -683,8 +691,15 @@
                                         Grid.Column="1"
                                         HorizontalAlignment="Right"
                                         VerticalAlignment="Center">
-                                <Button Content="-"
-                                        cal:Message.Attach="[Event Click] = [Action Minus($dataContext.ID)]" />
+                                    <Button Content="-">
+                                        <i:Interaction.Triggers>
+                                            <i:EventTrigger EventName="Click">
+                                                <cal:ActionMessage MethodName="Minus">
+                                                    <cal:Parameter Value="{Binding ID}" />
+                                                </cal:ActionMessage>
+                                            </i:EventTrigger>
+                                        </i:Interaction.Triggers>
+                                    </Button>
                                 <Border Background="{StaticResource ControlSurfaceBrush}"
                                         CornerRadius="4"
                                         Padding="6,2">
@@ -692,8 +707,15 @@
                                                Foreground="White"
                                                FontWeight="SemiBold"/>
                                 </Border>
-                                <Button Content="+"
-                                        cal:Message.Attach="[Event Click] = [Action Plus($dataContext.ID)]"/>
+                                    <Button Content="+">
+                                        <i:Interaction.Triggers>
+                                            <i:EventTrigger EventName="Click">
+                                                <cal:ActionMessage MethodName="Plus">
+                                                    <cal:Parameter Value="{Binding ID}" />
+                                                </cal:ActionMessage>
+                                            </i:EventTrigger>
+                                        </i:Interaction.Triggers>
+                                    </Button>
                             </StackPanel>
                         </Grid>
                     </DataTemplate>
