@@ -6,10 +6,12 @@ using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
+using Microsoft.Win32;
 
 namespace DJCMS.ViewModels
 {
@@ -37,7 +39,12 @@ namespace DJCMS.ViewModels
             };
 
             _output.Init(_mixer);
-            _output.Play();
+            //_output.Play();
+
+            _output.PlaybackStopped += (s, e) =>
+            {
+                IsPlaying = false;
+            };
 
             _timer = new DispatcherTimer(
                 TimeSpan.FromMilliseconds(60),
@@ -49,7 +56,19 @@ namespace DJCMS.ViewModels
             AutoLoad();
         }
 
-        public ObservableCollection<PlaylistTrack> Tracks { get; }
+        private ObservableCollection<PlaylistTrack> _tracks;
+        public ObservableCollection<PlaylistTrack> Tracks
+        {
+            get
+            {
+                return _tracks;
+            }
+            set
+            {
+                _tracks = value;
+                NotifyOfPropertyChange();
+            }
+        }
 
         private double _trackProgress;
         public double TrackProgress
@@ -87,14 +106,55 @@ namespace DJCMS.ViewModels
             LoadFiles(files);
         }
 
+        private bool _isPlaying;
+        public bool IsPlaying
+        {
+            get => _isPlaying;
+            set
+            {
+                if (_isPlaying == value)
+                    return;
+                _isPlaying = value;
+                NotifyOfPropertyChange();
+            }
+        }
+
+        public void Pause()
+        {
+            _output.Pause();
+        }
+
+        public void TogglePlay()
+        {
+            if (IsPlaying)
+            {
+                Stop();
+            }
+            else
+            {
+                Play();                
+            }
+        }
+
         public void Play()
         {
+            if(_currentTrack == null && _selectionID == null)
+            {
+                var firstTrack = Tracks.FirstOrDefault();
+                if (firstTrack != null)
+                {
+                    _selectionID = firstTrack.ID;
+                    SelectedTrack = firstTrack;
+                }
+            }
+
             if (_selectionID == null)
                 return;
 
             if (_selectionID == _currentTrack?.TrackID)
             {
                 _output.Play();
+                IsPlaying = true;
             }
             else
             {
@@ -106,6 +166,7 @@ namespace DJCMS.ViewModels
                     _currentTrack = new PlayingTrack(track, 0);
                     _mixer.AddMixerInput(_currentTrack.Provider);
                     _output.Play();
+                    IsPlaying = true;
                 }
             }
         }
@@ -192,7 +253,13 @@ namespace DJCMS.ViewModels
                         PlayTrack(nextTrack, _currentTrack.Track.GapSeconds);
                         _currentTrack = _bufferTrack;
                         _output.Play();
+                        IsPlaying = true;
                         SelectedTrack = nextTrack;
+                    }
+                    else
+                    {
+                        _output.Stop();
+                        IsPlaying = false;
                     }
                 }
             }
@@ -258,6 +325,68 @@ namespace DJCMS.ViewModels
         private PlaylistTrack? GetListTrack(Guid id)
         {
             return Tracks.FirstOrDefault(t => t.ID == id);
+        }
+
+        // TODO: Implement saving/loading playlists. Wired to the view via Caliburn Micro actions.
+        public async void SavePlaylist()
+        {
+            // Intentionally left blank for implementation in ViewModel
+            await SavePlaylistAsync(Tracks);
+        }
+
+        public async void LoadPlaylist()
+        {
+            Stop();            
+            _currentTrack = null;
+            _bufferTrack = null;
+            _selectedTrack = null;
+            _selectionID = null;
+            _trackProgress = 0;
+            Tracks = await LoadPlaylistAsync() ?? new ObservableCollection<PlaylistTrack>();
+        }
+
+        public static async Task SavePlaylistAsync(
+    ObservableCollection<PlaylistTrack> tracks)
+        {
+            var dialog = new SaveFileDialog
+            {
+                Filter = "DJ Playlist (*.json)|*.json|All Files (*.*)|*.*",
+                DefaultExt = ".json",
+                AddExtension = true,
+                FileName = "playlist.json"
+            };
+
+            if (dialog.ShowDialog() != true)
+                return;
+
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true
+            };
+
+            string json = JsonSerializer.Serialize(tracks, options);
+
+            await File.WriteAllTextAsync(dialog.FileName, json);
+        }
+
+        public static async Task<ObservableCollection<PlaylistTrack>?>
+    LoadPlaylistAsync()
+        {
+            var dialog = new OpenFileDialog
+            {
+                Filter = "DJ Playlist (*.json)|*.json|All Files (*.*)|*.*"
+            };
+
+            if (dialog.ShowDialog() != true)
+                return null;
+
+            string json = await File.ReadAllTextAsync(dialog.FileName);
+
+            var tracks =
+                JsonSerializer.Deserialize<
+                    ObservableCollection<PlaylistTrack>>(json);
+
+            return tracks;
         }
 
         protected override Task OnDeactivateAsync(bool close, CancellationToken cancellationToken)

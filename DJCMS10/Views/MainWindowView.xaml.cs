@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Controls.Primitives;
 using DJCMS.Models;
 using DJCMS.ViewModels;
 
@@ -22,6 +23,97 @@ namespace DJCMS.Views
             InitializeComponent();
             SourceInitialized += MainWindowView_SourceInitialized;
             StateChanged += MainWindowView_StateChanged;
+        }
+
+        // Resize thumb handlers
+        private void ResizeLeft_DragDelta(object sender, DragDeltaEventArgs e)
+        {
+            if (WindowState == WindowState.Maximized) return;
+
+            double newWidth = Width - e.HorizontalChange;
+            double minW = MinWidth > 0 ? MinWidth : 200;
+
+            if (newWidth >= minW)
+            {
+                Left += e.HorizontalChange;
+                Width = newWidth;
+            }
+            else
+            {
+                double delta = Width - minW;
+                Left += delta;
+                Width = minW;
+            }
+        }
+
+        private void ResizeRight_DragDelta(object sender, DragDeltaEventArgs e)
+        {
+            if (WindowState == WindowState.Maximized) return;
+
+            double newWidth = Width + e.HorizontalChange;
+            double minW = MinWidth > 0 ? MinWidth : 200;
+
+            if (newWidth >= minW)
+                Width = newWidth;
+            else
+                Width = minW;
+        }
+
+        private void ResizeTop_DragDelta(object sender, DragDeltaEventArgs e)
+        {
+            if (WindowState == WindowState.Maximized) return;
+
+            double newHeight = Height - e.VerticalChange;
+            double minH = MinHeight > 0 ? MinHeight : 150;
+
+            if (newHeight >= minH)
+            {
+                Top += e.VerticalChange;
+                Height = newHeight;
+            }
+            else
+            {
+                double delta = Height - minH;
+                Top += delta;
+                Height = minH;
+            }
+        }
+
+        private void ResizeBottom_DragDelta(object sender, DragDeltaEventArgs e)
+        {
+            if (WindowState == WindowState.Maximized) return;
+
+            double newHeight = Height + e.VerticalChange;
+            double minH = MinHeight > 0 ? MinHeight : 150;
+
+            if (newHeight >= minH)
+                Height = newHeight;
+            else
+                Height = minH;
+        }
+
+        private void ResizeTopLeft_DragDelta(object sender, DragDeltaEventArgs e)
+        {
+            ResizeLeft_DragDelta(sender, e);
+            ResizeTop_DragDelta(sender, e);
+        }
+
+        private void ResizeTopRight_DragDelta(object sender, DragDeltaEventArgs e)
+        {
+            ResizeRight_DragDelta(sender, e);
+            ResizeTop_DragDelta(sender, e);
+        }
+
+        private void ResizeBottomLeft_DragDelta(object sender, DragDeltaEventArgs e)
+        {
+            ResizeLeft_DragDelta(sender, e);
+            ResizeBottom_DragDelta(sender, e);
+        }
+
+        private void ResizeBottomRight_DragDelta(object sender, DragDeltaEventArgs e)
+        {
+            ResizeRight_DragDelta(sender, e);
+            ResizeBottom_DragDelta(sender, e);
         }
 
         private void MainWindowView_SourceInitialized(object? sender, EventArgs e)
@@ -86,6 +178,16 @@ namespace DJCMS.Views
             else
             {
                 EnterFullScreen();
+            }
+        }
+
+        private void MenuButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.ContextMenu != null)
+            {
+                btn.ContextMenu.PlacementTarget = btn;
+                btn.ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
+                btn.ContextMenu.IsOpen = true;
             }
         }
 

@@ -330,6 +330,36 @@
     M 12,0 L 12,20 L 18,20 L 18,0 Z
                     </Geometry>
 
+                    <Style x:Key="PlayPauseButton" TargetType="ToggleButton">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ToggleButton">
+                                    <Grid x:Name="wholeButton" Opacity="1">
+                                        <Ellipse x:Name="ButtonBack" Fill="{StaticResource SpotifyTrackBrush}" />
+                                        <Path x:Name="PlayPauseIcon" Fill="White"
+                                            Data="{StaticResource PlayGeometry}"
+                                            Width="18"
+                                            Height="20"
+                                            Stretch="Fill"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"/>                                       
+                                    </Grid>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsChecked"  Value="True">
+                                            <Setter TargetName="PlayPauseIcon" Property="Data" Value="{StaticResource PauseGeometry}"/>
+                                        </Trigger>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="ButtonBack" Property="Fill" Value="{StaticResource SpotifyGreenBrush}"/>
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter TargetName="wholeButton" Property="Opacity" Value="0.9" />                                            
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+
                 </ResourceDictionary>
             </Grid.Resources>
 
@@ -377,6 +407,26 @@
                       PreviewMouseMove="UIElement_OnPreviewMouseMove"
                       Margin="0,0,116,0"/>
 
+                <!-- Top-left menu button (opens a small dropdown) -->
+                <Button x:Name="MenuButton"
+                        Style="{StaticResource WindowControlButtonStyle}"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        Margin="4,4,0,0"
+                        Click="MenuButton_Click">
+                    <TextBlock Text="☰"
+                               FontSize="14"
+                               Opacity="0.9"/>
+                    <Button.ContextMenu>
+                        <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                            <MenuItem Header="Save Playlist"
+                                      cal:Message.Attach="[Event Click] = [Action SavePlaylist()]"/>
+                            <MenuItem Header="Load Playlist"
+                                      cal:Message.Attach="[Event Click] = [Action LoadPlaylist()]"/>
+                        </ContextMenu>
+                    </Button.ContextMenu>
+                </Button>
+
                 <StackPanel Orientation="Horizontal"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
@@ -400,6 +450,20 @@
                                    FontSize="13"/>
                     </Button>
                 </StackPanel>
+            </Grid>
+            <!-- Resize thumbs: edges and corners -->
+            <Grid IsHitTestVisible="True" Opacity="0.0" Grid.RowSpan="3" Margin="-5">
+                <!-- Edges -->
+                <Thumb x:Name="ResizeLeft" Width="8" HorizontalAlignment="Left" Cursor="SizeWE" Background="Transparent" DragDelta="ResizeLeft_DragDelta"/>
+                <Thumb x:Name="ResizeRight" Width="8" HorizontalAlignment="Right" Cursor="SizeWE" Background="Transparent" DragDelta="ResizeRight_DragDelta"/>
+                <Thumb x:Name="ResizeTop" Height="8" VerticalAlignment="Top" Cursor="SizeNS" Background="Transparent" DragDelta="ResizeTop_DragDelta"/>
+                <Thumb x:Name="ResizeBottom" Height="8" VerticalAlignment="Bottom" Cursor="SizeNS" Background="Transparent" DragDelta="ResizeBottom_DragDelta"/>
+
+                <!-- Corners -->
+                <Thumb x:Name="ResizeTopLeft" Width="12" Height="12" HorizontalAlignment="Left" VerticalAlignment="Top" Cursor="SizeNWSE" Background="Transparent" DragDelta="ResizeTopLeft_DragDelta"/>
+                <Thumb x:Name="ResizeTopRight" Width="12" Height="12" HorizontalAlignment="Right" VerticalAlignment="Top" Cursor="SizeNESW" Background="Transparent" DragDelta="ResizeTopRight_DragDelta"/>
+                <Thumb x:Name="ResizeBottomLeft" Width="12" Height="12" HorizontalAlignment="Left" VerticalAlignment="Bottom" Cursor="SizeNESW" Background="Transparent" DragDelta="ResizeBottomLeft_DragDelta"/>
+                <Thumb x:Name="ResizeBottomRight" Width="12" Height="12" HorizontalAlignment="Right" VerticalAlignment="Bottom" Cursor="SizeNWSE" Background="Transparent" DragDelta="ResizeBottomRight_DragDelta"/>
             </Grid>
 
             <ListBox x:Name="Tracks"
@@ -461,26 +525,12 @@
                             Width="500"
                             Margin="20"/>
 
-                    <ToggleButton Width="56" Height="56"
-        Background="#1DB954"
+                    <ToggleButton Width="50" Height="50" x:Name="TogglePlay" IsChecked="{Binding IsPlaying, Mode=OneWay}"
+         Style="{StaticResource PlayPauseButton}"
         BorderThickness="0">
-                        <ToggleButton.Template>
-                            <ControlTemplate TargetType="ToggleButton">
-                                <Grid>
-                                    <Ellipse Fill="{TemplateBinding Background}"/>
-                                    <Path Fill="White"
-                      Data="M 0,0 L 0,20 L 18,10 Z"
-                      Width="18"
-                      Height="20"
-                      Stretch="Fill"
-                      HorizontalAlignment="Center"
-                      VerticalAlignment="Center"/>
-                                </Grid>
-                            </ControlTemplate>
-                        </ToggleButton.Template>
                     </ToggleButton>
 
-                    <Button x:Name="Stop" Style="{StaticResource Button2}"
+                    <Button x:Name="Stop" Style="{StaticResource Button2}" Visibility="Collapsed"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             Height="50"
