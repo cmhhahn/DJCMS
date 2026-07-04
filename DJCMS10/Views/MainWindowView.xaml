@@ -16,23 +16,58 @@
         AllowsTransparency="True"
         Title="DJCMS - DJ Content Management System">
 
-    <Border BorderBrush="CornflowerBlue"
+    <Window.Resources>
+
+        <Color x:Key="AccentColor">#FF61A2E6</Color>
+        <!-- DarkAccentColor: slightly darker for better contrast on selected items -->
+        <Color x:Key="DarkAccentColor">#FF357dbe</Color>
+
+        <Color x:Key="GradientStop1">#001A1B1C</Color>
+        <Color x:Key="GradientStop2">#222324</Color>
+
+        <!-- Accent color: moved from CornflowerBlue to a cooler cyan-ice tone -->
+          <SolidColorBrush x:Key="SpotifyAccentColor" Color="{StaticResource AccentColor}"/>
+        <!-- Track/grey tones: given a very subtle cool-blue tint to unify with the accent -->
+        <SolidColorBrush x:Key="SpotifyTrackBrush"
+                            Color="#4A5258"/>
+        <SolidColorBrush x:Key="SpotifyThumbBrush" Color="White"/>
+        <!-- Generic control surface used where #444 was previously hardcoded -->
+        <SolidColorBrush x:Key="ControlSurfaceBrush" Color="#3E444A" />
+
+        <SolidColorBrush x:Key="PlaylistBackgroundBrush"
+                   Color="#111214"/>
+        <SolidColorBrush x:Key="PlaylistItemBrush"
+                   Color="#262B30"/>
+        <SolidColorBrush x:Key="PlaylistHoverBrush"
+                   Color="#33393E"/>
+        <SolidColorBrush x:Key="PlaylistSelectedBrush"
+                   Color="{StaticResource DarkAccentColor}"/>
+        <SolidColorBrush x:Key="PlaylistTextBrush"
+                   Color="#EEF6FA"/>
+        <SolidColorBrush x:Key="PlaylistSecondaryTextBrush"
+                   Color="#99A8B2"/>
+
+        <!-- FilePath text style: turns white when its containing ListBoxItem is selected -->
+        <Style x:Key="PlaylistFilePathStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource PlaylistSecondaryTextBrush}"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected}" Value="True">
+                    <Setter Property="Foreground" Value="White"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+    </Window.Resources>
+
+    <Border BorderBrush="{StaticResource SpotifyAccentColor}"
             BorderThickness="1"
-            Background="#111"
+            Background="{StaticResource PlaylistBackgroundBrush}"
             CornerRadius="4">
         <Grid>
             <Grid.Resources>
                 <ResourceDictionary>
 
-                    <SolidColorBrush x:Key="SpotifyGreenBrush"
-                                     Color="CornflowerBlue"/>
-                    <SolidColorBrush x:Key="SpotifyTrackBrush"
-                                     Color="#535353"/>
-                    <SolidColorBrush x:Key="SpotifyHoverBrush"
-                                     Color="#1ED760"/>
-                    <SolidColorBrush x:Key="SpotifyThumbBrush"
-                                     Color="White"/>
-
+                  
                     <!-- Window Control Button Style -->
                     <Style x:Key="WindowControlButtonStyle"
                            TargetType="Button">
@@ -133,7 +168,7 @@
                                                                 <Border Height="4"
                                                                         Margin="0,0,-6,0"
                                                                         CornerRadius="2"
-                                                                        Background="{StaticResource SpotifyGreenBrush}"/>
+                                                                        Background="{StaticResource SpotifyAccentColor}"/>
                                                             </ControlTemplate>
                                                         </RepeatButton.Template>
                                                     </RepeatButton>
@@ -166,19 +201,7 @@
                         </Setter>
                     </Style>
 
-                    <SolidColorBrush x:Key="PlaylistBackgroundBrush"
-                                     Color="#111"/>
-                    <SolidColorBrush x:Key="PlaylistItemBrush"
-                                     Color="#2A2A2A"/>
-                    <SolidColorBrush x:Key="PlaylistHoverBrush"
-                                     Color="#363636"/>
-                    <SolidColorBrush x:Key="PlaylistSelectedBrush"
-                                     Color="#007ACC"/>
-                    <SolidColorBrush x:Key="PlaylistTextBrush"
-                                     Color="#F0F0F0"/>
-                    <SolidColorBrush x:Key="PlaylistSecondaryTextBrush"
-                                     Color="#A0A0A0"/>
-
+                  
                     <Style x:Key="SpotifySliderStyle"
                            TargetType="Slider">
                         <Setter Property="Height"
@@ -211,7 +234,7 @@
                                                                 <Border Height="4"
                                                                         Margin="0,0,-6,0"
                                                                         CornerRadius="2"
-                                                                        Background="{StaticResource SpotifyGreenBrush}"/>
+                                                                        Background="{StaticResource SpotifyAccentColor}"/>
                                                             </ControlTemplate>
                                                         </RepeatButton.Template>
                                                     </RepeatButton>
@@ -251,7 +274,7 @@
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="Button">
-                                        <Border Background="#444"
+                                <Border Background="{StaticResource ControlSurfaceBrush}"
                                                 CornerRadius="4"
                                                 Padding="6,2"
                                                 Margin="2">
@@ -270,7 +293,7 @@
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="Button">
-                                        <Border Background="#444"
+                                        <Border Background="{StaticResource ControlSurfaceBrush}"
                             CornerRadius="4"
                             Padding="6,2"
                             Margin="2">
@@ -324,7 +347,7 @@
                                             </Border>
                                             <Border x:Name="DropIndicatorTop"
                                                     Height="3"
-                                                    Background="{StaticResource SpotifyGreenBrush}"
+                                                    Background="{StaticResource SpotifyAccentColor}"
                                                     CornerRadius="2"
                                                     Margin="8,0"
                                                     VerticalAlignment="Top"
@@ -333,7 +356,7 @@
                                                     IsHitTestVisible="False"/>
                                             <Border x:Name="DropIndicatorBottom"
                                                     Height="3"
-                                                    Background="{StaticResource SpotifyGreenBrush}"
+                                                    Background="{StaticResource SpotifyAccentColor}"
                                                     CornerRadius="2"
                                                     Margin="8,0"
                                                     VerticalAlignment="Bottom"
@@ -417,7 +440,7 @@
                                             <Setter TargetName="PlayPauseIcon" Property="Data" Value="{StaticResource PauseGeometry}"/>
                                         </Trigger>
                                         <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="ButtonBack" Property="Fill" Value="{StaticResource SpotifyGreenBrush}"/>
+                                            <Setter TargetName="ButtonBack" Property="Fill" Value="{StaticResource SpotifyAccentColor}"/>
                                         </Trigger>
                                         <Trigger Property="IsPressed" Value="True">
                                             <Setter TargetName="wholeButton" Property="Opacity" Value="0.9" />                                            
@@ -449,7 +472,7 @@
                                             <Setter TargetName="bg" Property="Background" Value="{StaticResource PlaylistHoverBrush}"/>
                                         </Trigger>
                                         <Trigger Property="IsPressed" Value="True">
-                                            <Setter TargetName="bg" Property="Background" Value="{StaticResource SpotifyGreenBrush}"/>
+                                            <Setter TargetName="bg" Property="Background" Value="{StaticResource SpotifyAccentColor}"/>
                                         </Trigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
@@ -471,9 +494,9 @@
                 <Grid.Background>
                     <LinearGradientBrush StartPoint="0,0"
                                          EndPoint="0,1">
-                        <GradientStop Color="#001A1A1A"
+                        <GradientStop Color="{StaticResource GradientStop1}"
                                       Offset="0"/>
-                        <GradientStop Color="#222"
+                        <GradientStop Color="{StaticResource GradientStop2}"
                                       Offset="1"/>
                     </LinearGradientBrush>
                 </Grid.Background>
@@ -515,7 +538,7 @@
                     <Border Background="{StaticResource PlaylistItemBrush}"
                             CornerRadius="6"
                             Padding="4"
-                            BorderBrush="{StaticResource SpotifyGreenBrush}"
+                            BorderBrush="{StaticResource SpotifyAccentColor}"
                             BorderThickness="1">
                         <StackPanel>
                             <Button Style="{StaticResource PopupMenuButtonStyle}"
@@ -580,7 +603,7 @@
                                            Foreground="{StaticResource PlaylistTextBrush}"/>
                                 <TextBlock Text="{Binding FilePath}"
                                            FontSize="11"
-                                           Foreground="{StaticResource PlaylistSecondaryTextBrush}"
+                                           Style="{StaticResource PlaylistFilePathStyle}"
                                            TextTrimming="CharacterEllipsis"/>
                             </StackPanel>
 
@@ -590,7 +613,7 @@
                                         VerticalAlignment="Center">
                                 <Button Content="-"
                                         cal:Message.Attach="[Event Click] = [Action Minus($dataContext.ID)]"/>
-                                <Border Background="#444"
+                                <Border Background="{StaticResource ControlSurfaceBrush}"
                                         CornerRadius="4"
                                         Padding="6,2">
                                     <TextBlock Text="{Binding GapSeconds, StringFormat={}{0:+0.##;-0.##;0}s}"
