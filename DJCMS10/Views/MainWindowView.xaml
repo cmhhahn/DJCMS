@@ -18,9 +18,9 @@
 
     <Window.Resources>
 
-        <Color x:Key="AccentColor">#FF61A2E6</Color>
+        <Color x:Key="AccentColor">#FF509bec</Color>
         <!-- DarkAccentColor: slightly darker for better contrast on selected items -->
-        <Color x:Key="DarkAccentColor">#FF357dbe</Color>
+        <Color x:Key="DarkAccentColor">#FF1b4d75</Color>
 
         <Color x:Key="GradientStop1">#001A1B1C</Color>
         <Color x:Key="GradientStop2">#222324</Color>
@@ -35,11 +35,11 @@
         <SolidColorBrush x:Key="ControlSurfaceBrush" Color="#3E444A" />
 
         <SolidColorBrush x:Key="PlaylistBackgroundBrush"
-                   Color="#111214"/>
+                   Color="#111213"/>
         <SolidColorBrush x:Key="PlaylistItemBrush"
-                   Color="#262B30"/>
+                   Color="#26282A"/>
         <SolidColorBrush x:Key="PlaylistHoverBrush"
-                   Color="#33393E"/>
+                   Color="#31363E"/>
         <SolidColorBrush x:Key="PlaylistSelectedBrush"
                    Color="{StaticResource DarkAccentColor}"/>
         <SolidColorBrush x:Key="PlaylistTextBrush"
