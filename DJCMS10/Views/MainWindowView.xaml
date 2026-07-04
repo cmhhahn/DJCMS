@@ -5,8 +5,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
         mc:Ignorable="d"
-       d:DesignHeight="400" d:DesignWidth="750"
-        
+       d:DesignHeight="400" d:DesignWidth="900"
+        MinWidth="820"
         
         xmlns:local="clr-namespace:DJCMS.Models"
         xmlns:cal="http://caliburnmicro.com"
@@ -465,31 +465,9 @@
                 <RowDefinition/>
                 <RowDefinition Height="70"/>
             </Grid.RowDefinitions>
-
-            <Button x:Name="FullScreenButton"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Bottom"
-                    Grid.Row="2"
-                    Style="{StaticResource WindowControlButtonStyle}"
-                    Click="FullScreenButton_Click">
-                <TextBlock Text="⛶"
-                           FontSize="14"
-                           Margin="0,-5,0,0"
-                           Opacity="0.5"/>
-            </Button>
-
-            <!-- Volume slider placed to the left of the fullscreen button -->
-            <Slider Style="{StaticResource VolumeSliderStyle}"
-                    Maximum="1.0"
-                    Value="{Binding Volume, Mode=TwoWay}"
-                    Width="140"
-                    Grid.Row="2"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Bottom"
-                    Margin="0,0,56,10"/>
-
+           
             <!-- Custom Title Bar -->
-            <Grid>
+            <Grid x:Name="TitleBarGrid">
                 <Grid.Background>
                     <LinearGradientBrush StartPoint="0,0"
                                          EndPoint="0,1">
@@ -576,22 +554,9 @@
                     </Button>
                 </StackPanel>
             </Grid>
-            <!-- Resize thumbs: edges and corners -->
-            <Grid IsHitTestVisible="True" Opacity="0.0" Grid.RowSpan="3" Margin="-5">
-                <!-- Edges -->
-                <Thumb x:Name="ResizeLeft" Width="8" HorizontalAlignment="Left" Cursor="SizeWE" Background="Transparent" DragDelta="ResizeLeft_DragDelta"/>
-                <Thumb x:Name="ResizeRight" Width="8" HorizontalAlignment="Right" Cursor="SizeWE" Background="Transparent" DragDelta="ResizeRight_DragDelta"/>
-                <Thumb x:Name="ResizeTop" Height="8" VerticalAlignment="Top" Cursor="SizeNS" Background="Transparent" DragDelta="ResizeTop_DragDelta"/>
-                <Thumb x:Name="ResizeBottom" Height="8" VerticalAlignment="Bottom" Cursor="SizeNS" Background="Transparent" DragDelta="ResizeBottom_DragDelta"/>
 
-                <!-- Corners -->
-                <Thumb x:Name="ResizeTopLeft" Width="12" Height="12" HorizontalAlignment="Left" VerticalAlignment="Top" Cursor="SizeNWSE" Background="Transparent" DragDelta="ResizeTopLeft_DragDelta"/>
-                <Thumb x:Name="ResizeTopRight" Width="12" Height="12" HorizontalAlignment="Right" VerticalAlignment="Top" Cursor="SizeNESW" Background="Transparent" DragDelta="ResizeTopRight_DragDelta"/>
-                <Thumb x:Name="ResizeBottomLeft" Width="12" Height="12" HorizontalAlignment="Left" VerticalAlignment="Bottom" Cursor="SizeNESW" Background="Transparent" DragDelta="ResizeBottomLeft_DragDelta"/>
-                <Thumb x:Name="ResizeBottomRight" Width="12" Height="12" HorizontalAlignment="Right" VerticalAlignment="Bottom" Cursor="SizeNWSE" Background="Transparent" DragDelta="ResizeBottomRight_DragDelta"/>
-            </Grid>
-
-            <ListBox x:Name="Tracks"
+            <Grid x:Name="MainArea" Grid.Row="1">
+                <ListBox x:Name="Tracks"
                      Margin="10"
                      Grid.Row="1"
                      SelectedItem="{Binding SelectedTrack}"
@@ -639,30 +604,75 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
+            </Grid>
 
-            <Grid Grid.Row="2">
-                <StackPanel Orientation="Horizontal"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center">
-                    <Slider Style="{StaticResource SpotifySliderStyle}"
-                            Maximum="1.0"
-                            Value="{Binding TrackProgress, Mode=TwoWay}"
-                            Width="500"
-                            Margin="20"/>
 
-                    <ToggleButton Width="50" Height="50" x:Name="TogglePlay" IsChecked="{Binding IsPlaying, Mode=OneWay}"
-         Style="{StaticResource PlayPauseButton}"
-        BorderThickness="0">
-                    </ToggleButton>
+            <Grid Grid.Row="2" x:Name="BottomBar">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1.6*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                
+                <Grid x:Name="AudioControl" Grid.Column="1">
+                    <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center">
+                        <Slider Style="{StaticResource SpotifySliderStyle}"
+                                Maximum="1.0"
+                                Value="{Binding TrackProgress, Mode=TwoWay}"
+                                Width="500"
+                                Margin="20"/>
 
-                    <Button x:Name="Stop" Style="{StaticResource Button2}" Visibility="Collapsed"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
-                            Height="50"
-                            Width="50">
-                        
+                        <ToggleButton Width="50" Height="50" x:Name="TogglePlay" IsChecked="{Binding IsPlaying, Mode=OneWay}"
+                             Style="{StaticResource PlayPauseButton}"
+                            BorderThickness="0">
+                        </ToggleButton>
+                    </StackPanel>
+                </Grid>
+
+                <Grid x:Name="RightControls" Grid.Column="3">
+                    <Button x:Name="FullScreenButton"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Bottom"
+                        Grid.Row="2"
+                        Style="{StaticResource WindowControlButtonStyle}"
+                        Click="FullScreenButton_Click">
+                                        <TextBlock Text="⛶"
+                               FontSize="14"
+                               Margin="0,-5,0,0"
+                               Opacity="0.5"/>
                     </Button>
-                </StackPanel>
+
+                    <!-- Volume slider placed to the left of the fullscreen button -->
+                    <Slider Style="{StaticResource VolumeSliderStyle}"
+                            Maximum="1.0"
+                            Value="{Binding Volume, Mode=TwoWay}"
+                            Width="140"
+                            Grid.Row="2"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Bottom"
+                            Margin="0,0,56,10"/>
+                </Grid>
+            </Grid>
+            
+
+
+
+            <!-- Resize thumbs: edges and corners -->
+            <Grid IsHitTestVisible="True" Opacity="0.0" Grid.RowSpan="3" Margin="-5">
+                <!-- Edges -->
+                <Thumb x:Name="ResizeLeft" Width="8" HorizontalAlignment="Left" Cursor="SizeWE" Background="Transparent" DragDelta="ResizeLeft_DragDelta"/>
+                <Thumb x:Name="ResizeRight" Width="8" HorizontalAlignment="Right" Cursor="SizeWE" Background="Transparent" DragDelta="ResizeRight_DragDelta"/>
+                <Thumb x:Name="ResizeTop" Height="8" VerticalAlignment="Top" Cursor="SizeNS" Background="Transparent" DragDelta="ResizeTop_DragDelta"/>
+                <Thumb x:Name="ResizeBottom" Height="8" VerticalAlignment="Bottom" Cursor="SizeNS" Background="Transparent" DragDelta="ResizeBottom_DragDelta"/>
+
+                <!-- Corners -->
+                <Thumb x:Name="ResizeTopLeft" Width="12" Height="12" HorizontalAlignment="Left" VerticalAlignment="Top" Cursor="SizeNWSE" Background="Transparent" DragDelta="ResizeTopLeft_DragDelta"/>
+                <Thumb x:Name="ResizeTopRight" Width="12" Height="12" HorizontalAlignment="Right" VerticalAlignment="Top" Cursor="SizeNESW" Background="Transparent" DragDelta="ResizeTopRight_DragDelta"/>
+                <Thumb x:Name="ResizeBottomLeft" Width="12" Height="12" HorizontalAlignment="Left" VerticalAlignment="Bottom" Cursor="SizeNESW" Background="Transparent" DragDelta="ResizeBottomLeft_DragDelta"/>
+                <Thumb x:Name="ResizeBottomRight" Width="12" Height="12" HorizontalAlignment="Right" VerticalAlignment="Bottom" Cursor="SizeNWSE" Background="Transparent" DragDelta="ResizeBottomRight_DragDelta"/>
             </Grid>
         </Grid>
     </Border>
