@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 18
+VisualStudioVersion = 18.5.11723.231
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DJCMS10", "DJCMS10\DJCMS10.csproj", "{72FD9A18-FC71-4F91-A74D-E9E75B8A0488}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{72FD9A18-FC71-4F91-A74D-E9E75B8A0488}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72FD9A18-FC71-4F91-A74D-E9E75B8A0488}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72FD9A18-FC71-4F91-A74D-E9E75B8A0488}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72FD9A18-FC71-4F91-A74D-E9E75B8A0488}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A4383A83-0A18-4885-8220-447B0D10FB65}
+	EndGlobalSection
+EndGlobal
