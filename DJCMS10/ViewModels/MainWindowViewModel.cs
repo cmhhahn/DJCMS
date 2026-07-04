@@ -27,6 +27,7 @@ namespace DJCMS.ViewModels
         private double _progress;
         private bool _dragging;
         private Guid? _selectionID;
+        private double _volume = 0.5;
 
         public MainWindowViewModel()
         {
@@ -37,14 +38,23 @@ namespace DJCMS.ViewModels
             {
                 ReadFully = false
             };
-
-            _output.Init(_mixer);
-            //_output.Play();
-
-            _output.PlaybackStopped += (s, e) =>
+            try
             {
-                IsPlaying = false;
-            };
+                _output.Volume = (float)_volume;
+
+                _output.Init(_mixer);
+                //_output.Play();
+
+                _output.PlaybackStopped += (s, e) =>
+                {
+                    IsPlaying = false;
+                };
+            }
+            catch
+            {
+                // Audio initialization failed (device or platform issue). Swallow so UI can load.
+                // Leave _mixer initialized but don't rely on _output being usable.
+            }
 
             _timer = new DispatcherTimer(
                 TimeSpan.FromMilliseconds(60),
@@ -79,6 +89,26 @@ namespace DJCMS.ViewModels
                 if (Math.Abs(_trackProgress - value) < 0.0001)
                     return;
                 _trackProgress = value;
+                NotifyOfPropertyChange();
+            }
+        }
+
+        public double Volume
+        {
+            get => _volume;
+            set
+            {
+                if (Math.Abs(_volume - value) < 0.0001)
+                    return;
+                _volume = Math.Max(0, Math.Min(1, value));
+                try
+                {
+                    _output.Volume = (float)_volume;
+                }
+                catch
+                {
+                    // ignore if output not initialized yet
+                }
                 NotifyOfPropertyChange();
             }
         }

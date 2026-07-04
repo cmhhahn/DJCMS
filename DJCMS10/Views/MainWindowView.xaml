@@ -83,6 +83,8 @@
                         </Setter>
                     </Style>
 
+                    <!-- Volume slider style: moved below thumb style to avoid forward StaticResource reference -->
+
                     <Style x:Key="SpotifySliderThumbStyle"
                            TargetType="Thumb">
                         <Setter Property="Width"
@@ -93,6 +95,72 @@
                             <Setter.Value>
                                 <ControlTemplate TargetType="Thumb">
                                     <Ellipse Fill="{StaticResource SpotifyThumbBrush}"/>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+
+                    <!-- Volume slider style (similar to track style but without track-specific events) -->
+                    <Style x:Key="VolumeSliderStyle"
+                           TargetType="Slider">
+                        <Setter Property="Height"
+                                Value="20"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Slider">
+                                    <Grid Background="Transparent">
+                                        <Grid VerticalAlignment="Center">
+                                            <Track x:Name="PART_Track">
+                                                <Track.IncreaseRepeatButton>
+                                                    <RepeatButton Focusable="False"
+                                                                  IsTabStop="False">
+                                                        <RepeatButton.Template>
+                                                            <ControlTemplate>
+                                                                <Border Height="4"
+                                                                        Margin="-10,0,0,0"
+                                                                        CornerRadius="2"
+                                                                        Background="{StaticResource SpotifyTrackBrush}"/>
+                                                            </ControlTemplate>
+                                                        </RepeatButton.Template>
+                                                    </RepeatButton>
+                                                </Track.IncreaseRepeatButton>
+
+                                                <Track.DecreaseRepeatButton>
+                                                    <RepeatButton Focusable="False"
+                                                                  IsTabStop="False">
+                                                        <RepeatButton.Template>
+                                                            <ControlTemplate>
+                                                                <Border Height="4"
+                                                                        Margin="0,0,-6,0"
+                                                                        CornerRadius="2"
+                                                                        Background="{StaticResource SpotifyGreenBrush}"/>
+                                                            </ControlTemplate>
+                                                        </RepeatButton.Template>
+                                                    </RepeatButton>
+                                                </Track.DecreaseRepeatButton>
+
+                                                <Track.Thumb>
+                                                    <Thumb x:Name="VolumeThumb"
+                                                           Style="{StaticResource SpotifySliderThumbStyle}"/>
+                                                </Track.Thumb>
+                                            </Track>
+                                        </Grid>
+                                    </Grid>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger SourceName="VolumeThumb"
+                                                 Property="IsMouseOver"
+                                                 Value="False">
+                                            <Setter TargetName="VolumeThumb"
+                                                    Property="Opacity"
+                                                    Value="0.0"/>
+                                        </Trigger>
+                                        <Trigger Property="IsMouseOver"
+                                                 Value="True">
+                                            <Setter TargetName="VolumeThumb"
+                                                    Property="Opacity"
+                                                    Value="1"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
                                 </ControlTemplate>
                             </Setter.Value>
                         </Setter>
@@ -380,6 +448,16 @@
                            Margin="0,-5,0,0"
                            Opacity="0.5"/>
             </Button>
+
+            <!-- Volume slider placed to the left of the fullscreen button -->
+            <Slider Style="{StaticResource VolumeSliderStyle}"
+                    Maximum="1.0"
+                    Value="{Binding Volume, Mode=TwoWay}"
+                    Width="140"
+                    Grid.Row="2"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom"
+                    Margin="0,0,56,10"/>
 
             <!-- Custom Title Bar -->
             <Grid>
