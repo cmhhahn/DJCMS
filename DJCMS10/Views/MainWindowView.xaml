@@ -309,6 +309,44 @@
                         </Style.Setters>
                     </Style>
 
+                    <!-- Custom scrollbar and thumb styles scoped to these listboxes -->
+                    <Style x:Key="CustomThumbStyle" TargetType="Thumb">
+                        <Setter Property="Background" Value="{StaticResource SpotifyAccentColor}"/>
+                        <Setter Property="Width" Value="8"/>
+                        <Setter Property="Height" Value="8"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Thumb">
+                                    <Border Background="{TemplateBinding Background}" CornerRadius="4"/>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+
+                    <Style x:Key="CustomScrollBarStyle" TargetType="ScrollBar">
+                        <Setter Property="Width" Value="10"/>
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ScrollBar">
+                                    <Grid Background="Transparent" Width="{TemplateBinding Width}">
+                                        <Track Name="PART_Track" IsDirectionReversed="True">
+                                            <Track.DecreaseRepeatButton>
+                                                <RepeatButton Command="ScrollBar.PageUpCommand" Opacity="0"/>
+                                            </Track.DecreaseRepeatButton>
+                                            <Track.Thumb>
+                                                <Thumb Style="{StaticResource CustomThumbStyle}"/>
+                                            </Track.Thumb>
+                                            <Track.IncreaseRepeatButton>
+                                                <RepeatButton Command="ScrollBar.PageDownCommand" Opacity="0"/>
+                                            </Track.IncreaseRepeatButton>
+                                        </Track>
+                                    </Grid>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+
                     <Style x:Key="DarkPlaylistListBoxStyle"
                            TargetType="ListBox">
                         <Setter Property="Background"
@@ -319,6 +357,8 @@
                                 Value="{StaticResource PlaylistTextBrush}"/>
                         <Setter Property="Padding"
                                 Value="6"/>
+                        <!-- Scope the custom scrollbar to controls using this ListBox style -->
+                        
                     </Style>
 
                     <Style x:Key="DarkPlaylistItemStyle"
@@ -639,6 +679,12 @@
                      SelectedItem="{Binding LibraryItem}"
                      ItemContainerStyle="{StaticResource DarkPlaylistItemStyle2}"
                      Style="{StaticResource DarkPlaylistListBoxStyle}">
+                    <ListBox.Resources>
+                        <ResourceDictionary>
+                            <Style TargetType="ScrollBar" BasedOn="{StaticResource CustomScrollBarStyle}"/>
+                            <Style TargetType="Thumb" BasedOn="{StaticResource CustomThumbStyle}"/>
+                        </ResourceDictionary>
+                    </ListBox.Resources>
                     <ListBox.ItemTemplate>
                         <DataTemplate DataType="{x:Type local:PlaylistTrack}">                            
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
@@ -659,6 +705,13 @@
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
+                
+                <Thumb x:Name="Splitter"
+                       Width="5"
+                       Grid.Column="1"
+                       Cursor="SizeWE"
+                       Background="{StaticResource ControlSurfaceBrush}"
+                       DragDelta="Splitter_DragDelta"/>
 
                 <ListBox x:Name="Tracks"
                          Margin="10" Grid.Column="2"
@@ -668,29 +721,36 @@
                          AllowDrop="True"
                          Drop="ListBox_Drop"
                          DragOver="ListBox_DragOver">
-                        <ListBox.ItemTemplate>
-                    <DataTemplate DataType="{x:Type local:PlaylistTrack}">
-                        <Grid Margin="4">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="90"/>
-                            </Grid.ColumnDefinitions>
+                    <ListBox.Resources>
+                        <ResourceDictionary>
+                            <Style TargetType="ScrollBar" BasedOn="{StaticResource CustomScrollBarStyle}"/>
+                            <Style TargetType="Thumb" BasedOn="{StaticResource CustomThumbStyle}"/>
+                        </ResourceDictionary>
+                    </ListBox.Resources>
+                    <ListBox.ItemTemplate>
 
-                            <StackPanel>
-                                <TextBlock Text="{Binding FileName}"
-                                           FontSize="14"
-                                           FontWeight="SemiBold"
-                                           Foreground="{StaticResource PlaylistTextBrush}"/>
-                                <TextBlock Text="{Binding FilePath}"
-                                           FontSize="11"
-                                           Style="{StaticResource PlaylistFilePathStyle}"
-                                           TextTrimming="CharacterEllipsis"/>
-                            </StackPanel>
+                        <DataTemplate DataType="{x:Type local:PlaylistTrack}">
+                            <Grid Margin="4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="90"/>
+                                </Grid.ColumnDefinitions>
 
-                            <StackPanel Orientation="Horizontal"
-                                        Grid.Column="1"
-                                        HorizontalAlignment="Right"
-                                        VerticalAlignment="Center">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding FileName}"
+                                               FontSize="14"
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource PlaylistTextBrush}"/>
+                                    <TextBlock Text="{Binding FilePath}"
+                                               FontSize="11"
+                                               Style="{StaticResource PlaylistFilePathStyle}"
+                                               TextTrimming="CharacterEllipsis"/>
+                                </StackPanel>
+
+                                <StackPanel Orientation="Horizontal"
+                                            Grid.Column="1"
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Center">
                                     <Button Content="-">
                                         <i:Interaction.Triggers>
                                             <i:EventTrigger EventName="Click">
@@ -700,13 +760,13 @@
                                             </i:EventTrigger>
                                         </i:Interaction.Triggers>
                                     </Button>
-                                <Border Background="{StaticResource ControlSurfaceBrush}"
-                                        CornerRadius="4"
-                                        Padding="6,2">
-                                    <TextBlock Text="{Binding GapSeconds, StringFormat={}{0:+0.##;-0.##;0}s}"
-                                               Foreground="White"
-                                               FontWeight="SemiBold"/>
-                                </Border>
+                                    <Border Background="{StaticResource ControlSurfaceBrush}"
+                                            CornerRadius="4"
+                                            Padding="6,2">
+                                        <TextBlock Text="{Binding GapSeconds, StringFormat={}{0:+0.##;-0.##;0}s}"
+                                                   Foreground="White"
+                                                   FontWeight="SemiBold"/>
+                                    </Border>
                                     <Button Content="+">
                                         <i:Interaction.Triggers>
                                             <i:EventTrigger EventName="Click">
@@ -716,11 +776,11 @@
                                             </i:EventTrigger>
                                         </i:Interaction.Triggers>
                                     </Button>
-                            </StackPanel>
-                        </Grid>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
             </Grid>
 
 

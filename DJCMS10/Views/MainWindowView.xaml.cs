@@ -476,5 +476,10 @@ namespace DJCMS.Views
                 }
             }
         }
+
+        private void Splitter_DragDelta(object sender, DragDeltaEventArgs e)
+        {
+
+        }
     }
 }
