@@ -337,9 +337,17 @@ namespace DJCMS.Views
                 targetItem.Tag = null;
             }
 
+            var droppedTrack = e.Data.GetData(typeof(PlaylistTrack)) as PlaylistTrack;
+
+            if (droppedTrack != null && Library.Items.Contains(droppedTrack) && DataContext is MainWindowViewModel vm)
+            {
+                var files = new string[] { droppedTrack.FilePath };
+                HandleDroppedFiles(files, sender, vm);
+                return;
+            }
+
             // Handle internal track reordering
-            if (e.Data.GetData(typeof(PlaylistTrack)) is PlaylistTrack droppedTrack &&
-                sender is ListBoxItem targetListBoxItem &&
+            if (droppedTrack !=null && sender is ListBoxItem targetListBoxItem &&
                 targetListBoxItem.DataContext is PlaylistTrack targetTrack &&
                 DataContext is MainWindowViewModel viewModel)
             {
@@ -382,34 +390,38 @@ namespace DJCMS.Views
                 }
             }
             // Handle external file drops
-            else if (e.Data.GetDataPresent(DataFormats.FileDrop) && DataContext is MainWindowViewModel vm)
+            else if (e.Data.GetDataPresent(DataFormats.FileDrop) && DataContext is MainWindowViewModel vm2)
             {
                 var files = (string[])e.Data.GetData(DataFormats.FileDrop);
 
-                if (sender is ListBoxItem dropTargetItem &&
-                    dropTargetItem.DataContext is PlaylistTrack dropTargetTrack)
-                {
-                    // Insert at the position of the target item
-                    int targetIndex = vm.Tracks.IndexOf(dropTargetTrack);
-                    if (!_dropAfter)
-                    {
-                        // Drop before the target
-                        vm.LoadFilesAtIndex(files, targetIndex);
-                    }
-                    else
-                    {
-                        // Drop after the target
-                        vm.LoadFilesAtIndex(files, targetIndex + 1);
-                    }
-                }
-                else
-                {
-                    // Drop at the end if no specific target
-                    vm.LoadFiles(files);
-                }
+                HandleDroppedFiles(files, sender, vm2);
             }
 
             e.Handled = true;
+        }
+
+        private void HandleDroppedFiles(string[] files, object sender, MainWindowViewModel vm)
+        {
+            if (sender is ListBoxItem dropTargetItem && dropTargetItem.DataContext is PlaylistTrack dropTargetTrack)
+            {
+                // Insert at the position of the target item
+                int targetIndex = vm.Tracks.IndexOf(dropTargetTrack);
+                if (!_dropAfter)
+                {
+                    // Drop before the target
+                    vm.LoadFilesAtIndex(files, targetIndex);
+                }
+                else
+                {
+                    // Drop after the target
+                    vm.LoadFilesAtIndex(files, targetIndex + 1);
+                }
+            }
+            else
+            {
+                // Drop at the end if no specific target
+                vm.LoadFiles(files);
+            }
         }
 
         private void ListBox_DragOver(object sender, DragEventArgs e)

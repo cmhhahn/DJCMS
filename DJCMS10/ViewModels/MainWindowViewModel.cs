@@ -222,7 +222,11 @@ namespace DJCMS.ViewModels
 
         public void AddTrack(Guid trackId)
         {
-            
+            var track = GetLibraryTrack(trackId);
+            if (track != null)
+            {
+                Tracks.Add(track);
+            }
         }
 
         public void Minus(Guid trackId)
@@ -391,6 +395,11 @@ namespace DJCMS.ViewModels
         private PlaylistTrack? GetListTrack(Guid id)
         {
             return Tracks.FirstOrDefault(t => t.ID == id);
+        }
+
+        private PlaylistTrack? GetLibraryTrack(Guid id)
+        {
+            return LibraryFolder.FirstOrDefault(t => t.ID == id);
         }
 
         // TODO: Implement saving/loading playlists. Wired to the view via Caliburn Micro actions.
