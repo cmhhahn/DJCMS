@@ -335,13 +335,23 @@
                                                 <RepeatButton Command="ScrollBar.PageUpCommand" Opacity="0"/>
                                             </Track.DecreaseRepeatButton>
                                             <Track.Thumb>
-                                                <Thumb Style="{StaticResource CustomThumbStyle}"/>
+                                                <Thumb x:Name="Thumb" Style="{StaticResource CustomThumbStyle}"/>
                                             </Track.Thumb>
                                             <Track.IncreaseRepeatButton>
                                                 <RepeatButton Command="ScrollBar.PageDownCommand" Opacity="0"/>
                                             </Track.IncreaseRepeatButton>
                                         </Track>
                                     </Grid>
+                                    <ControlTemplate.Triggers>
+                                        <!-- Make vertical thumb a bit taller (min height) -->
+                                        <Trigger Property="Orientation" Value="Vertical">
+                                            <Setter TargetName="Thumb" Property="MinHeight" Value="36"/>
+                                        </Trigger>
+                                        <!-- Ensure horizontal thumb isn't too tall -->
+                                        <Trigger Property="Orientation" Value="Horizontal">
+                                            <Setter TargetName="Thumb" Property="MinWidth" Value="24"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
                                 </ControlTemplate>
                             </Setter.Value>
                         </Setter>
@@ -674,6 +684,7 @@
                 </Grid.ColumnDefinitions>
 
                 <ListBox x:Name="Library"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                      Margin="10" Grid.Column="0"
                      ItemsSource="{Binding LibraryFolder}"
                      SelectedItem="{Binding LibraryItem}"
@@ -705,13 +716,27 @@
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
-                
+
                 <Thumb x:Name="Splitter"
                        Width="5"
                        Grid.Column="1"
                        Cursor="SizeWE"
                        Background="{StaticResource ControlSurfaceBrush}"
-                       DragDelta="Splitter_DragDelta"/>
+                       DragDelta="Splitter_DragDelta" Opacity="0">
+                    <Thumb.Style>
+                        <Style TargetType="Thumb">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Thumb">
+                                        <Grid Background="{TemplateBinding Background}">
+                                            <Rectangle Stroke="Transparent" Width="1" Fill="{StaticResource PlaylistBackgroundBrush}" HorizontalAlignment="Center"/>
+                                        </Grid>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Thumb.Style>
+                </Thumb>
 
                 <ListBox x:Name="Tracks"
                          Margin="10" Grid.Column="2"
