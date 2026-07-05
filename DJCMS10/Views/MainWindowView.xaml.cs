@@ -339,7 +339,7 @@ namespace DJCMS.Views
 
             var droppedTrack = e.Data.GetData(typeof(PlaylistTrack)) as PlaylistTrack;
 
-            if (droppedTrack != null && Library.Items.Contains(droppedTrack) && DataContext is MainWindowViewModel vm)
+            if (droppedTrack != null && Library != null && Library.Items.Contains(droppedTrack) && DataContext is MainWindowViewModel vm)
             {
                 var files = new string[] { droppedTrack.FilePath };
                 HandleDroppedFiles(files, sender, vm);

@@ -32,6 +32,8 @@ namespace DJCMS.ViewModels
         public MainWindowViewModel()
         {
             Tracks = new ObservableCollection<PlaylistTrack>();
+            // Ensure library collection is initialized to avoid null refs
+            LibraryFolder = new ObservableCollection<PlaylistTrack>();
 
             _output = new WaveOutEvent();
             _mixer = new MixingSampleProvider(_mixerFormat)
@@ -45,9 +47,17 @@ namespace DJCMS.ViewModels
                 _output.Init(_mixer);
                 //_output.Play();
 
+                // Ensure any UI property changes happen on the UI thread
                 _output.PlaybackStopped += (s, e) =>
                 {
-                    IsPlaying = false;
+                    try
+                    {
+                        Application.Current?.Dispatcher?.BeginInvoke(new System.Action(() => IsPlaying = false));
+                    }
+                    catch
+                    {
+                        // ignore dispatcher problems
+                    }
                 };
             }
             catch
@@ -165,7 +175,14 @@ namespace DJCMS.ViewModels
 
         public void Pause()
         {
-            _output.Pause();
+            try
+            {
+                _output?.Pause();
+            }
+            catch
+            {
+                // ignore audio errors
+            }
         }
 
         public void TogglePlay()
@@ -197,8 +214,15 @@ namespace DJCMS.ViewModels
 
             if (_selectionID == _currentTrack?.TrackID)
             {
-                _output.Play();
-                IsPlaying = true;
+                try
+                {
+                    _output?.Play();
+                    IsPlaying = true;
+                }
+                catch
+                {
+                    IsPlaying = false;
+                }
             }
             else
             {
@@ -209,15 +233,30 @@ namespace DJCMS.ViewModels
                 {
                     _currentTrack = new PlayingTrack(track, 0);
                     _mixer.AddMixerInput(_currentTrack.Provider);
-                    _output.Play();
-                    IsPlaying = true;
+                    try
+                    {
+                        _output?.Play();
+                        IsPlaying = true;
+                    }
+                    catch
+                    {
+                        IsPlaying = false;
+                    }
                 }
             }
         }
 
         public void Stop()
         {
-            _output.Stop();
+            try
+            {
+                _output?.Stop();
+                IsPlaying = false;
+            }
+            catch
+            {
+                // ignore
+            }
         }
 
         public void AddTrack(Guid trackId)
@@ -352,8 +391,6 @@ namespace DJCMS.ViewModels
                 .OrderBy(file => file)
                 .ToArray();
 
-            LoadFiles(fileArray);
-
             var fileArray2 = Directory.GetFiles(libraryFolderPath)
                 .Where(file => supportedExtensions.Contains(Path.GetExtension(file).ToLowerInvariant()))
                 .OrderBy(file => file)
@@ -399,25 +436,38 @@ namespace DJCMS.ViewModels
 
         private PlaylistTrack? GetLibraryTrack(Guid id)
         {
-            return LibraryFolder.FirstOrDefault(t => t.ID == id);
+            return LibraryFolder?.FirstOrDefault(t => t.ID == id);
         }
 
         // TODO: Implement saving/loading playlists. Wired to the view via Caliburn Micro actions.
-        public async void SavePlaylist()
+        public async Task SavePlaylist()
         {
-            // Intentionally left blank for implementation in ViewModel
-            await SavePlaylistAsync(Tracks);
+            try
+            {
+                await SavePlaylistAsync(Tracks);
+            }
+            catch (Exception ex)
+            {
+                try { MessageBox.Show($"Failed to save playlist: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error); } catch { }
+            }
         }
 
-        public async void LoadPlaylist()
+        public async Task LoadPlaylist()
         {
-            Stop();            
-            _currentTrack = null;
-            _bufferTrack = null;
-            _selectedTrack = null;
-            _selectionID = null;
-            _trackProgress = 0;
-            Tracks = await LoadPlaylistAsync() ?? new ObservableCollection<PlaylistTrack>();
+            try
+            {
+                Stop();
+                _currentTrack = null;
+                _bufferTrack = null;
+                _selectedTrack = null;
+                _selectionID = null;
+                _trackProgress = 0;
+                Tracks = await LoadPlaylistAsync() ?? new ObservableCollection<PlaylistTrack>();
+            }
+            catch (Exception ex)
+            {
+                try { MessageBox.Show($"Failed to load playlist: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error); } catch { }
+            }
         }
 
         public static async Task SavePlaylistAsync(
@@ -441,7 +491,14 @@ namespace DJCMS.ViewModels
 
             string json = JsonSerializer.Serialize(tracks, options);
 
-            await File.WriteAllTextAsync(dialog.FileName, json);
+            try
+            {
+                await File.WriteAllTextAsync(dialog.FileName, json);
+            }
+            catch (Exception ex)
+            {
+                try { MessageBox.Show($"Unable to save playlist: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error); } catch { }
+            }
         }
 
         public static async Task<ObservableCollection<PlaylistTrack>?>
@@ -455,13 +512,21 @@ namespace DJCMS.ViewModels
             if (dialog.ShowDialog() != true)
                 return null;
 
-            string json = await File.ReadAllTextAsync(dialog.FileName);
+            try
+            {
+                string json = await File.ReadAllTextAsync(dialog.FileName);
 
-            var tracks =
-                JsonSerializer.Deserialize<
-                    ObservableCollection<PlaylistTrack>>(json);
+                var tracks =
+                    JsonSerializer.Deserialize<
+                        ObservableCollection<PlaylistTrack>>(json);
 
-            return tracks;
+                return tracks;
+            }
+            catch (Exception ex)
+            {
+                try { MessageBox.Show($"Unable to load playlist: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error); } catch { }
+                return null;
+            }
         }
 
         protected override Task OnDeactivateAsync(bool close, CancellationToken cancellationToken)
