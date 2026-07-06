@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using Microsoft.Win32;
+using NAudio.Dsp;
 
 namespace DJCMS.ViewModels
 {
@@ -28,6 +29,8 @@ namespace DJCMS.ViewModels
         private bool _dragging;
         private Guid? _selectionID;
         private double _volume = 0.5;
+
+        
 
         public MainWindowViewModel()
         {

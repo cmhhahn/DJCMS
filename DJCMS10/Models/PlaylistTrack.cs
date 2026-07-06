@@ -30,6 +30,7 @@ namespace DJCMS.Models
                 _filePath = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(FileName));
+                OnPropertyChanged(nameof(Duration));
             }
         }
 
@@ -44,6 +45,26 @@ namespace DJCMS.Models
 
                 _gapSeconds = value;
                 OnPropertyChanged();
+            }
+        }
+
+        [JsonIgnore]
+        public string Duration
+        {
+            get
+            {
+                try
+                {
+                    using var reader = new NAudio.Wave.AudioFileReader(FilePath);
+                    var totalSeconds = (int)reader.TotalTime.TotalSeconds;
+                    var minutes = totalSeconds / 60;
+                    var seconds = totalSeconds % 60;
+                    return $"{minutes}:{seconds:D2}";
+                }
+                catch
+                {
+                    return "00:00";
+                }
             }
         }
 

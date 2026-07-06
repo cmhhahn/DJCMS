@@ -330,7 +330,7 @@
                             <Setter.Value>
                                 <ControlTemplate TargetType="ScrollBar">
                                     <Grid Background="Transparent" Width="{TemplateBinding Width}">
-                                        <Track Name="PART_Track" IsDirectionReversed="True">
+                                        <Track Name="PART_Track" IsDirectionReversed="True" VerticalAlignment="Stretch">
                                             <Track.DecreaseRepeatButton>
                                                 <RepeatButton Height="10" Command="ScrollBar.PageUpCommand" Opacity="0"/>
                                             </Track.DecreaseRepeatButton>
@@ -758,7 +758,7 @@
                             <Grid Margin="4">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="200"/>
+                                    <ColumnDefinition Width="300"/>
                                 </Grid.ColumnDefinitions>
 
                                 <StackPanel Orientation="Horizontal">
@@ -768,7 +768,7 @@
                                            Margin="4,0,10,0" />
                                     <StackPanel>
                                         <TextBlock Text="{Binding FileName}"
-                                                   FontSize="14"
+                                                   FontSize="16"
                                                    FontWeight="SemiBold"
                                                    Foreground="{StaticResource PlaylistTextBrush}"/>
                                         <TextBlock Text="{Binding FilePath}"
@@ -783,6 +783,10 @@
                                             Grid.Column="1"
                                             HorizontalAlignment="Right"
                                             VerticalAlignment="Center">
+                                    
+                                    <TextBlock Text="{Binding Duration}" FontSize="15"
+                                               Foreground="White"
+                                               Margin="0,0,20,0" />
 
                                     <Button Content="   " Margin="0,0,20,0">
                                         <i:Interaction.Triggers>
