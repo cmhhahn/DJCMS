@@ -332,24 +332,20 @@
                                     <Grid Background="Transparent" Width="{TemplateBinding Width}">
                                         <Track Name="PART_Track" IsDirectionReversed="True">
                                             <Track.DecreaseRepeatButton>
-                                                <RepeatButton Command="ScrollBar.PageUpCommand" Opacity="0"/>
+                                                <RepeatButton Height="10" Command="ScrollBar.PageUpCommand" Opacity="0"/>
                                             </Track.DecreaseRepeatButton>
                                             <Track.Thumb>
                                                 <Thumb x:Name="Thumb" Style="{StaticResource CustomThumbStyle}"/>
                                             </Track.Thumb>
                                             <Track.IncreaseRepeatButton>
-                                                <RepeatButton Command="ScrollBar.PageDownCommand" Opacity="0"/>
+                                                <RepeatButton Height="10" Command="ScrollBar.PageDownCommand" Opacity="0"/>
                                             </Track.IncreaseRepeatButton>
                                         </Track>
                                     </Grid>
                                     <ControlTemplate.Triggers>
                                         <!-- Make vertical thumb a bit taller (min height) -->
                                         <Trigger Property="Orientation" Value="Vertical">
-                                            <Setter TargetName="Thumb" Property="MinHeight" Value="36"/>
-                                        </Trigger>
-                                        <!-- Ensure horizontal thumb isn't too tall -->
-                                        <Trigger Property="Orientation" Value="Horizontal">
-                                            <Setter TargetName="Thumb" Property="MinWidth" Value="24"/>
+                                            <Setter TargetName="Thumb" Property="MinHeight" Value="100"/>
                                         </Trigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
@@ -740,6 +736,9 @@
                 </Thumb>
 
                 <ListBox x:Name="Tracks"
+                         ScrollViewer.CanContentScroll="False"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                          Margin="10" Grid.Column="2"
                          SelectedItem="{Binding SelectedTrack}"
                          ItemContainerStyle="{StaticResource DarkPlaylistItemStyle}"
