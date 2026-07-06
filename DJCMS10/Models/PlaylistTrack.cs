@@ -1,6 +1,9 @@
+using DJCMS10.Models;
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Text.Json.Serialization;
+using System.Windows.Media;
 
 namespace DJCMS.Models
 {
@@ -44,6 +47,17 @@ namespace DJCMS.Models
             }
         }
 
+        [JsonIgnore]
         public string FileName => System.IO.Path.GetFileNameWithoutExtension(FilePath);
+
+        [JsonIgnore]
+        public ImageSource Thumbnail =>  TrackThumbnailGenerator.Generate(ID.ToString());
+
+        public void ReGen()
+        {
+            ID = Guid.NewGuid();
+            OnPropertyChanged(nameof(ID));
+            OnPropertyChanged(nameof(Thumbnail));
+        }
     }
 }

@@ -479,7 +479,27 @@ namespace DJCMS.Views
 
         private void Splitter_DragDelta(object sender, DragDeltaEventArgs e)
         {
+            // Resize the left column (library) when the splitter thumb is dragged.
+            // Positive HorizontalChange indicates the mouse moved to the right -> increase left column.
+            if (MainArea == null) return;
 
+            var leftColumn = MainArea.ColumnDefinitions[0];
+
+            // Determine current absolute width of the left column.
+            double currentWidth = leftColumn.Width.IsAbsolute ? leftColumn.Width.Value : (Library?.ActualWidth ?? 300);
+
+            double total = MainArea.ActualWidth;
+
+            // Minimum and maximum constraints to avoid collapsing panels
+            double minWidth = 80;
+            double maxWidth = total - 80; // leave room for right pane
+
+            double newWidth = currentWidth + e.HorizontalChange;
+
+            if (newWidth < minWidth) newWidth = minWidth;
+            if (newWidth > maxWidth) newWidth = Math.Max(minWidth, maxWidth);
+
+            leftColumn.Width = new System.Windows.GridLength(newWidth);
         }
     }
 }

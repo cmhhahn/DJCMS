@@ -286,6 +286,24 @@ namespace DJCMS.ViewModels
             }
         }
 
+        public void ReGenTrack(Guid trackId)
+        {
+            var track = GetListTrack(trackId);
+            if (track != null)
+            {
+                track.ReGen();
+            }
+        }
+
+        public void RemoveTrack(Guid trackId)
+        {
+            var track = GetListTrack(trackId);
+            if (track != null)
+            {
+                Tracks.Remove(track);
+            }
+        }
+
         public void TrackProgressDragStarted()
         {
             _dragging = true;
@@ -379,25 +397,19 @@ namespace DJCMS.ViewModels
             _mixer.AddMixerInput(_bufferTrack.Provider);
         }
 
-        private void AutoLoad()
+        private async void AutoLoad()
         {
-            var libraryFolderPath = @"D:\Music\DJing";
-            var folderPath = @"D:\Music\DJing\test";
+            var libraryFolderPath = @"D:\Music\DJing\717_backup";
 
             var supportedExtensions = new[] { ".mp3", ".wav", ".m4a", ".flac", ".aac", ".wma", ".ogg" };
-
-            var fileArray = Directory.GetFiles(folderPath)
-                .Where(file => supportedExtensions.Contains(Path.GetExtension(file).ToLowerInvariant()))
-                .OrderBy(file => file)
-                .ToArray();
-
             var fileArray2 = Directory.GetFiles(libraryFolderPath)
                 .Where(file => supportedExtensions.Contains(Path.GetExtension(file).ToLowerInvariant()))
                 .OrderBy(file => file)
                 .ToArray();
 
-            LoadFiles(fileArray);
             LoadLibrary(fileArray2);
+
+            Tracks = await LoadPlaylistFile(@"D:\Music\DJing\717\playlist.json");
         }
 
         public void LoadFiles(string[] files)
@@ -501,8 +513,7 @@ namespace DJCMS.ViewModels
             }
         }
 
-        public static async Task<ObservableCollection<PlaylistTrack>?>
-    LoadPlaylistAsync()
+        public static async Task<ObservableCollection<PlaylistTrack>?> LoadPlaylistAsync()
         {
             var dialog = new OpenFileDialog
             {
@@ -514,17 +525,31 @@ namespace DJCMS.ViewModels
 
             try
             {
-                string json = await File.ReadAllTextAsync(dialog.FileName);
+                var tracks = await LoadPlaylistFile(dialog.FileName);
 
-                var tracks =
-                    JsonSerializer.Deserialize<
-                        ObservableCollection<PlaylistTrack>>(json);
-
-                return tracks;
+                if(tracks != null)
+                    return tracks;
+                else
+                    return null;
             }
             catch (Exception ex)
             {
                 try { MessageBox.Show($"Unable to load playlist: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error); } catch { }
+                return null;
+            }
+        }
+
+        public static async Task<ObservableCollection<PlaylistTrack>> LoadPlaylistFile(string filePath)
+        {
+            try
+            {
+                string json = await File.ReadAllTextAsync(filePath);
+                var tracks =
+                    JsonSerializer.Deserialize<ObservableCollection<PlaylistTrack>>(json);
+                return tracks ?? new ObservableCollection<PlaylistTrack>();
+            }
+            catch (Exception ex)
+            {
                 return null;
             }
         }

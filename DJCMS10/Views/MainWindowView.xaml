@@ -675,12 +675,13 @@
                 </StackPanel>
             </Grid>
 
+            <!-- playlist and library -->
             <Grid x:Name="MainArea" Grid.Row="1">
 
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="300"/>
+                    <ColumnDefinition Width="300" MinWidth="200" MaxWidth="1000" />
                     <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*" MinWidth="400" />
                 </Grid.ColumnDefinitions>
 
                 <ListBox x:Name="Library"
@@ -758,24 +759,42 @@
                             <Grid Margin="4">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="90"/>
+                                    <ColumnDefinition Width="200"/>
                                 </Grid.ColumnDefinitions>
 
-                                <StackPanel>
-                                    <TextBlock Text="{Binding FileName}"
-                                               FontSize="14"
-                                               FontWeight="SemiBold"
-                                               Foreground="{StaticResource PlaylistTextBrush}"/>
-                                    <TextBlock Text="{Binding FilePath}"
-                                               FontSize="11"
-                                               Style="{StaticResource PlaylistFilePathStyle}"
-                                               TextTrimming="CharacterEllipsis"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <Image Source="{Binding Thumbnail}"
+                                           Width="40"
+                                           Height="40"
+                                           Margin="4,0,10,0" />
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding FileName}"
+                                                   FontSize="14"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{StaticResource PlaylistTextBrush}"/>
+                                        <TextBlock Text="{Binding FilePath}"
+                                                   FontSize="11"
+                                                   Style="{StaticResource PlaylistFilePathStyle}"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                    </StackPanel>
                                 </StackPanel>
+                               
 
                                 <StackPanel Orientation="Horizontal"
                                             Grid.Column="1"
                                             HorizontalAlignment="Right"
                                             VerticalAlignment="Center">
+
+                                    <Button Content=" " Margin="0,0,20,0">
+                                        <i:Interaction.Triggers>
+                                            <i:EventTrigger EventName="Click">
+                                                <cal:ActionMessage MethodName="ReGenTrack">
+                                                    <cal:Parameter Value="{Binding ID}" />
+                                                </cal:ActionMessage>
+                                            </i:EventTrigger>
+                                        </i:Interaction.Triggers>
+                                    </Button>
+
                                     <Button Content="-">
                                         <i:Interaction.Triggers>
                                             <i:EventTrigger EventName="Click">
@@ -801,6 +820,17 @@
                                             </i:EventTrigger>
                                         </i:Interaction.Triggers>
                                     </Button>
+
+                                    <Button Content="⨉" Margin="20,0,4,0">
+                                        <i:Interaction.Triggers>
+                                            <i:EventTrigger EventName="Click">
+                                                <cal:ActionMessage MethodName="RemoveTrack">
+                                                    <cal:Parameter Value="{Binding ID}" />
+                                                </cal:ActionMessage>
+                                            </i:EventTrigger>
+                                        </i:Interaction.Triggers>
+                                    </Button>
+                                    
                                 </StackPanel>
                             </Grid>
                         </DataTemplate>
