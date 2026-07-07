@@ -791,7 +791,7 @@
                     <ListBox.ItemTemplate>
                         <DataTemplate DataType="{x:Type local:PlaylistTrack}">                            
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
-                                <Button Content="+">
+                                <Button Content="+" Height="26" Margin="0,0,10,0" FontSize="14">
                                     <i:Interaction.Triggers>
                                         <i:EventTrigger EventName="Click">
                                             <cal:ActionMessage MethodName="AddTrack">
@@ -800,10 +800,17 @@
                                         </i:EventTrigger>
                                     </i:Interaction.Triggers>
                                 </Button>
-                                <TextBlock Text="{Binding FileName}"
-                                           FontSize="14"
-                                           FontWeight="SemiBold"
-                                           Foreground="{StaticResource PlaylistTextBrush}"/>                                
+                                <StackPanel>
+                                    <TextBlock Text="{Binding FileName}"
+                                        FontSize="14"
+                                        FontWeight="SemiBold"
+                                        Foreground="{StaticResource PlaylistTextBrush}"/>
+                                    <TextBlock Text="{Binding Duration}"
+                                        FontSize="12"
+                                        FontWeight="Normal"
+                                        Foreground="{StaticResource PlaylistTextBrush}" Opacity="0.7"/>
+                                </StackPanel>
+                                                           
                             </StackPanel>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
