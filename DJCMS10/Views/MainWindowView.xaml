@@ -57,6 +57,102 @@
             </Style.Triggers>
         </Style>
 
+
+        <Style x:Key="ModernScrollBarThumb" TargetType="Thumb">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Thumb">
+                        <Border x:Name="ThumbBorder"
+                        CornerRadius="3"
+                        Background="#6EC6FF"
+                        Margin="0" Width="6" />
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ThumbBorder"
+                                Property="Background"
+                                Value="#8ED7FF"/>
+                            </Trigger>
+
+                            <Trigger Property="IsDragging" Value="True">
+                                <Setter TargetName="ThumbBorder"
+                                Property="Background"
+                                Value="#42A5F5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ModernScrollBar"
+       TargetType="ScrollBar">
+
+            <Setter Property="Background"
+            Value="Transparent"/>
+
+            <Setter Property="Width"
+            Value="8"/>
+
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ScrollBar">
+
+                        <Grid Background="Transparent">
+
+                            <Track x:Name="PART_Track" IsDirectionReversed="True" Width="8">
+
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Command="ScrollBar.PageUpCommand"
+                                          Opacity="0"
+                                          Focusable="False"/>
+                                </Track.DecreaseRepeatButton>
+
+                                <Track.Thumb>
+                                    <Thumb Style="{StaticResource ModernScrollBarThumb}"/>
+                                </Track.Thumb>
+
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Command="ScrollBar.PageDownCommand"
+                                          Opacity="0"
+                                          Focusable="False"/>
+                                </Track.IncreaseRepeatButton>
+
+                            </Track>
+
+                            <!-- Black Track -->
+                            <Border Background="Transparent"
+                            CornerRadius="6"
+                            Margin="0"
+                            IsHitTestVisible="False"/>
+
+                        </Grid>
+
+                        <ControlTemplate.Triggers>
+
+                            <!-- Vertical -->
+                            <Trigger Property="Orientation"
+                             Value="Vertical">
+                                <Setter TargetName="PART_Track"
+                                Property="Grid.ZIndex"
+                                Value="1"/>
+                            </Trigger>
+
+                            <!-- Horizontal -->
+                            <Trigger Property="Orientation"
+                             Value="Horizontal">
+                                <Setter Property="Height"
+                                Value="8"/>
+                                <Setter Property="Width"
+                                Value="Auto"/>
+                            </Trigger>
+
+                        </ControlTemplate.Triggers>
+
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
     </Window.Resources>
 
     <Border BorderBrush="{StaticResource SpotifyAccentColor}"
@@ -689,8 +785,7 @@
                      Style="{StaticResource DarkPlaylistListBoxStyle}">
                     <ListBox.Resources>
                         <ResourceDictionary>
-                            <Style TargetType="ScrollBar" BasedOn="{StaticResource CustomScrollBarStyle}"/>
-                            <Style TargetType="Thumb" BasedOn="{StaticResource CustomThumbStyle}"/>
+                            <Style TargetType="ScrollBar" BasedOn="{StaticResource ModernScrollBar}"/>
                         </ResourceDictionary>
                     </ListBox.Resources>
                     <ListBox.ItemTemplate>
@@ -748,8 +843,7 @@
                          DragOver="ListBox_DragOver">
                     <ListBox.Resources>
                         <ResourceDictionary>
-                            <Style TargetType="ScrollBar" BasedOn="{StaticResource CustomScrollBarStyle}"/>
-                            <Style TargetType="Thumb" BasedOn="{StaticResource CustomThumbStyle}"/>
+                            <Style TargetType="ScrollBar" BasedOn="{StaticResource ModernScrollBar}"/>
                         </ResourceDictionary>
                     </ListBox.Resources>
                     <ListBox.ItemTemplate>
