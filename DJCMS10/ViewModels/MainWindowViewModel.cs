@@ -575,14 +575,14 @@ namespace DJCMS.ViewModels
 
         private void MonitorPlayingEvents(double progress)
         {
+            //if the progress is not moving, the current playing track is probably done
             if (_progress == progress)
             {
+                //check if we are corsssfading and need to switch to the buffer track
                 if (_currentTrack.Track.GapSeconds < 0 &&
                 !_mixer.MixerInputs.Any(x => x == _currentTrack?.Provider) && _bufferTrack != null)
                 {
-                    Console.WriteLine(" probably corssfade done");
                     _bufferTrack.Reader.Volume = 1.0f;
-
                     _currentTrack = _bufferTrack;
                     _output.Play();
                     IsPlaying = true;
@@ -590,8 +590,11 @@ namespace DJCMS.ViewModels
                     CurrentPlayingTrackId = _bufferTrack.Track.ID;
                     _bufferTrack = null;
                 }
+                return;
             }
 
+            //if the progress is over 90% and there is no mixer input,
+            //we ended a non fading track, and need to load the next track
             if (progress > 0.9 && !_mixer.MixerInputs.Any())
             {
                 if (_currentTrack?.Track.GapSeconds > -1)
@@ -641,8 +644,12 @@ namespace DJCMS.ViewModels
                     }
                 }
             }
+
+            // if the current track is in the player,
+            // and the current track has a negative gap (indicating a crossfade) and progress is greater than 50%
             else if (_currentTrack != null && _currentTrack.Track.GapSeconds < 0 && progress > 0.5)
             {
+                //check if it's time to kick off the crossfade, if it's not already set
                 if (!_currentTrack.fadingOut &&
                     (_currentTrack.Reader.TotalTime - _currentTrack.Reader.CurrentTime).TotalMilliseconds < Math.Abs(_currentTrack.Track.GapSeconds)*1000)
                 {
@@ -658,9 +665,9 @@ namespace DJCMS.ViewModels
                     }                        
                 }
             }
-            
 
-            if(_currentTrack != null && _currentTrack.fadingOut && _bufferTrack != null)
+            // if tracks are crossfading, adjust their volumes based on the remaining time of the current track
+            if (_currentTrack != null && _currentTrack.fadingOut && _bufferTrack != null)
             {
                 float ratio = (float)((_currentTrack.Reader.TotalTime - _currentTrack.Reader.CurrentTime).TotalMilliseconds)
                                 / (float)(Math.Abs(_currentTrack.Track.GapSeconds) * 1000f);
@@ -670,7 +677,7 @@ namespace DJCMS.ViewModels
                 _bufferTrack.Reader.Volume = Math.Min(1.0f, 1.0f-(ratio));
             }
 
-
+            //update our progress tracker for the next tick
             _progress = progress;
         }
 
