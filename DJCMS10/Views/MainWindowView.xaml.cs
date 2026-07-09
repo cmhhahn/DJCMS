@@ -1,13 +1,15 @@
 using DJCMS.Models;
 using DJCMS.ViewModels;
+using DJCMS10.Utilities;
+using System.Runtime.Intrinsics.Arm;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Media;
 using System.Windows.Media.Animation;
-using DJCMS10.Utilities;
 using DataFormats = System.Windows.DataFormats;
 using DragDropEffects = System.Windows.DragDropEffects;
 using DragEventArgs = System.Windows.DragEventArgs;
@@ -32,6 +34,7 @@ namespace DJCMS.Views
         public MainWindowView()
         {
             InitializeComponent();
+            ResizeMode = ResizeMode.NoResize;
             SourceInitialized += MainWindowView_SourceInitialized;
             StateChanged += MainWindowView_StateChanged;
             Loaded += MainWindowView_Loaded;
@@ -210,13 +213,12 @@ namespace DJCMS.Views
 
         private void MainWindowView_SourceInitialized(object? sender, EventArgs e)
         {
-            MaxHeight = 1032;
-            MaxWidth = 1920;
+            GetMaximizedSizeLimits();
 
             //base.OnSourceInitialized(e);
 
-            var source = (HwndSource)PresentationSource.FromVisual(this);
-            source.AddHook(WndProc);
+            //var source = (HwndSource)PresentationSource.FromVisual(this);
+            //source.AddHook(WndProc);
         }
 
         private IntPtr WndProc(
@@ -290,12 +292,21 @@ namespace DJCMS.Views
 
         private void GetMaximizedSizeLimits()
         {
-            //Rect size = GetCurrentMonitorWorkingArea();
-            //MaxHeight = size.Height - 40;
-            //MaxWidth = size.Width;
+            Rect size = GetCurrentMonitorWorkingArea();
+
+            if (_isFullScreen)
+            {
+                MaxHeight = size.Height;
+                MaxWidth = size.Width;
+            }
+            else
+            {
+                MaxHeight = size.Height;
+                MaxWidth = size.Width;
+            }            
         }
 
-        /*
+        
         private Rect GetCurrentMonitorWorkingArea()
         {
             var hwnd = new WindowInteropHelper(this).Handle;
@@ -304,13 +315,15 @@ namespace DJCMS.Views
 
             var workingArea = screen.WorkingArea;
 
+            var dpi = VisualTreeHelper.GetDpi(this);
+
             return new Rect(
-                workingArea.Left,
-                workingArea.Top,
-                workingArea.Width,
-                workingArea.Height);
+                (double)workingArea.Left / dpi.DpiScaleX,
+                (double)workingArea.Top / dpi.DpiScaleY,
+                (double)workingArea.Width / dpi.DpiScaleX,
+                (double)workingArea.Height / dpi.DpiScaleY);
         }
-        */
+        
 
         private void FullScreenButton_Click(object sender, RoutedEventArgs e)
         {
@@ -415,10 +428,10 @@ namespace DJCMS.Views
         {
             if (e.LeftButton == MouseButtonState.Pressed && sender is ListBoxItem listBoxItem)
             {
-                Point currentPosition = e.GetPosition(null);
+                 Point currentPosition = e.GetPosition(null);
                 Vector diff = _dragStartPoint - currentPosition;
 
-                if (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
+               if (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
                     Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance)
                 {
                     var track = listBoxItem.DataContext as PlaylistTrack;
