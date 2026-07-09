@@ -576,9 +576,23 @@ namespace DJCMS.ViewModels
         private void MonitorPlayingEvents(double progress)
         {
             if (_progress == progress)
-                return;
+            {
+                if (_currentTrack.Track.GapSeconds < 0 &&
+                !_mixer.MixerInputs.Any(x => x == _currentTrack?.Provider) && _bufferTrack != null)
+                {
+                    Console.WriteLine(" probably corssfade done");
+                    _bufferTrack.Reader.Volume = 1.0f;
 
-            if (progress > 0.99 && !_mixer.MixerInputs.Any())
+                    _currentTrack = _bufferTrack;
+                    _output.Play();
+                    IsPlaying = true;
+                    SelectedTrack = _bufferTrack.Track;
+                    CurrentPlayingTrackId = _bufferTrack.Track.ID;
+                    _bufferTrack = null;
+                }
+            }
+
+            if (progress > 0.9 && !_mixer.MixerInputs.Any())
             {
                 if (_currentTrack?.Track.GapSeconds > -1)
                 {
@@ -597,6 +611,7 @@ namespace DJCMS.ViewModels
                                 IsPlaying = true;
                                 SelectedTrack = nextTrack;
                                 CurrentPlayingTrackId = nextTrack.ID;
+                                _bufferTrack = null;
                             }
                             else
                             {
@@ -626,6 +641,35 @@ namespace DJCMS.ViewModels
                     }
                 }
             }
+            else if (_currentTrack != null && _currentTrack.Track.GapSeconds < 0 && progress > 0.5)
+            {
+                if (!_currentTrack.fadingOut &&
+                    (_currentTrack.Reader.TotalTime - _currentTrack.Reader.CurrentTime).TotalMilliseconds < Math.Abs(_currentTrack.Track.GapSeconds)*1000)
+                {
+                    Console.WriteLine(" probably corssfade");
+                    var nextTrack = GetNextTrack();
+                    if (nextTrack != null)
+                    {
+                        _currentTrack.fadingOut = true;
+                        _bufferTrack = new PlayingTrack(nextTrack, 0);
+                        _bufferTrack.Reader.Volume = 0.0f; // Start the next track muted for fade-in
+                        _bufferTrack.fadingIn = true;
+                        _mixer.AddMixerInput(_bufferTrack.Provider);
+                    }                        
+                }
+            }
+            
+
+            if(_currentTrack != null && _currentTrack.fadingOut && _bufferTrack != null)
+            {
+                float ratio = (float)((_currentTrack.Reader.TotalTime - _currentTrack.Reader.CurrentTime).TotalMilliseconds)
+                                / (float)(Math.Abs(_currentTrack.Track.GapSeconds) * 1000f);
+
+                //do volume fade out
+                _currentTrack.Reader.Volume = Math.Max(0.0f, ratio);
+                _bufferTrack.Reader.Volume = Math.Min(1.0f, 1.0f-(ratio));
+            }
+
 
             _progress = progress;
         }
