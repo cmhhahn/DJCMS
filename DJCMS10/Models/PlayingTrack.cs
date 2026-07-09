@@ -80,3 +80,54 @@ namespace DJCMS.Models
         }
     }
 }
+
+/*
+ float currentGain = 1.0f;
+float fadeStep = 0.0f;
+int samplesRemaining = 0; // samples left in fade (per channel sample count)
+public event EventHandler? FadeOutCompleted;
+
+public FadeSampleProvider(ISampleProvider source)
+{
+    this.source = source;
+}
+
+// begin a short fade to 0 over duration; safe to call from UI thread
+public void BeginFadeOut(TimeSpan duration)
+{
+    int sampleRate = WaveFormat.SampleRate;
+    int channels = WaveFormat.Channels;
+    int fadeSamples = Math.Max(1, (int)(duration.TotalSeconds * sampleRate) * channels);
+    fadeStep = -currentGain / fadeSamples;
+    samplesRemaining = fadeSamples;
+    if (fadeSamples == 0)
+    {
+        currentGain = 0;
+        FadeOutCompleted?.Invoke(this, EventArgs.Empty);
+    }
+}
+
+public int Read(float[] buffer, int offset, int count)
+{
+    int read = source.Read(buffer, offset, count);
+    if (read == 0) return 0;
+
+    for (int n = 0; n < read; n++)
+    {
+        // apply current gain to each float sample
+        buffer[offset + n] *= currentGain;
+
+        if (samplesRemaining > 0)
+        {
+            currentGain += fadeStep;
+            samplesRemaining--;
+            if (samplesRemaining == 0)
+            {
+                currentGain = Math.Max(0, currentGain);
+                FadeOutCompleted?.Invoke(this, EventArgs.Empty);
+            }
+        }
+    }
+    return read;
+}
+ */ 
