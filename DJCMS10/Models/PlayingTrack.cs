@@ -61,8 +61,14 @@ public sealed class PlayingTrack : IDisposable
     {
         TimeSpan _duration = duration ?? TimeSpan.FromSeconds(Math.Max(Math.Abs(Track.GapSeconds) - 0.5,0)); // Default to 5 seconds if no duration is provided
 
-        _fadeSampleProvider.FadeOutCompleted += FadeOutCompleted;
+        _fadeSampleProvider.FadeOutCompleted += _fadeSampleProvider_FadeOutCompleted1;
         _fadeSampleProvider.BeginFadeOut(_duration);
+    }
+
+    private void _fadeSampleProvider_FadeOutCompleted1(object? sender, EventArgs e)
+    {
+        this.FadeOutCompleted?.Invoke(this, EventArgs.Empty);
+        _fadeSampleProvider.FadeOutCompleted -= _fadeSampleProvider_FadeOutCompleted1;
     }
 
     private void _fadeSampleProvider_FadeOutCompleted(object? sender, EventArgs e)
@@ -94,12 +100,19 @@ public sealed class PlayingTrack : IDisposable
         }
     }
 
+    bool _disposed;
     public void Dispose()
     {
         try
         {
-            this.Reader.Dispose();
-        } catch { }        
+            if (_disposed) return;
+            this.Reader?.Dispose();
+            _disposed = true;
+        }
+        catch
+        {
+            // Ignore exceptions during dispose
+        }
     }
 }
 
@@ -115,6 +128,8 @@ public class FadeSampleProvider : ISampleProvider, IDisposable
 
     IDisposable reader;
 
+    public bool FadingOut = false;
+
     bool fadeIn = true;
 
     public FadeSampleProvider(ISampleProvider source, IDisposable reaser)
@@ -125,16 +140,20 @@ public class FadeSampleProvider : ISampleProvider, IDisposable
     // begin a short fade to 0 over duration; safe to call from UI thread
     public void BeginFadeOut(TimeSpan duration)
     {
-        int sampleRate = WaveFormat.SampleRate;
-        int channels = WaveFormat.Channels;
-        int fadeSamples = Math.Max(1, (int)(duration.TotalSeconds * sampleRate) * channels);
-        fadeStep = -currentGain / fadeSamples;
-        samplesRemaining = fadeSamples;
-        if (fadeSamples == 0)
+        if (!FadingOut)
         {
-            currentGain = 0;
-            FadeOutCompleted?.Invoke(this, EventArgs.Empty);
-        }
+            FadingOut = true;
+            int sampleRate = WaveFormat.SampleRate;
+            int channels = WaveFormat.Channels;
+            int fadeSamples = Math.Max(1, (int)(duration.TotalSeconds * sampleRate) * channels);
+            fadeStep = -currentGain / fadeSamples;
+            samplesRemaining = fadeSamples;
+            if (fadeSamples == 0)
+            {
+                currentGain = 0;
+                FadeOutCompleted?.Invoke(this, EventArgs.Empty);
+            }
+        }       
     }
 
     public int Read(float[] buffer, int offset, int count)
@@ -147,7 +166,7 @@ public class FadeSampleProvider : ISampleProvider, IDisposable
             // apply current gain to each float sample
             buffer[offset + n] *= currentGain;
 
-            if (samplesRemaining > 0)
+            if (FadingOut && samplesRemaining > 0)
             {
                 currentGain += fadeStep;
                 samplesRemaining--;
@@ -171,11 +190,14 @@ public class FadeSampleProvider : ISampleProvider, IDisposable
         return read;
     }
 
+    bool _disposed;
     public void Dispose()
     {
         try
         {
-            this.reader.Dispose();
+            if (_disposed) return;
+            this.reader?.Dispose();
+            _disposed = true;
         }
         catch
         {

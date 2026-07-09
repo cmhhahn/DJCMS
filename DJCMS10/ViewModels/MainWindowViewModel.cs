@@ -471,11 +471,14 @@ namespace DJCMS.ViewModels
         {
             foreach (var input in _mixerX.MixerInputs.ToList())
             {
-                (input as FadeSampleProvider)?.FadeOutCompleted += (s, e) =>
+                EventHandler metho = null;
+                (input as FadeSampleProvider)?.FadeOutCompleted += metho = (s, e) =>
                 {
                     try
                     {
                         _mixerX.RemoveMixerInput(input);
+                        (input as FadeSampleProvider)?.Dispose();
+                        (input as FadeSampleProvider)?.FadeOutCompleted -= metho;
                     }
                     catch { }
                 };
