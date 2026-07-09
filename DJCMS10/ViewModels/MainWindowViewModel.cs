@@ -894,7 +894,8 @@ namespace DJCMS.ViewModels
                 Filter = "DJ Playlist (*.json)|*.json|All Files (*.*)|*.*",
                 DefaultExt = ".json",
                 AddExtension = true,
-                FileName = "playlist.json"
+                FileName = "playlist.json",
+                DefaultDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DJCMS")
             };
 
             if (dialog.ShowDialog() != true)
@@ -921,7 +922,8 @@ namespace DJCMS.ViewModels
         {
             var dialog = new OpenFileDialog
             {
-                Filter = "DJ Playlist (*.json)|*.json|All Files (*.*)|*.*"
+                Filter = "DJ Playlist (*.json)|*.json|All Files (*.*)|*.*",
+                DefaultDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DJCMS")
             };
 
             if (dialog.ShowDialog() != true)

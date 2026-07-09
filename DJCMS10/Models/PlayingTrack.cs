@@ -12,6 +12,9 @@ namespace DJCMS.Models
         public Guid TrackID { get; }
         public PlaylistTrack Track { get; }
 
+        bool fadingIn = false;
+        bool fadingOut = false;
+
         public PlayingTrack(PlaylistTrack track, int offset)
         {
             if (string.IsNullOrEmpty(track.FilePath))
