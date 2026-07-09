@@ -5,14 +5,14 @@ using System.IO;
 
 namespace DJCMS.Models;
 
-public sealed class PlayingTrack
+public sealed class PlayingTrack : IDisposable
 {
     public AudioFileReader Reader { get; }
     public ISampleProvider Provider { get; }
+    private FadeSampleProvider _fadeSampleProvider { get; }
     public Guid TrackID { get; }
     public PlaylistTrack Track { get; }
 
-    public bool fadingIn = false;
     public bool fadingOut = false;
 
     private PlayingTrack(PlaylistTrack track, int offset)
@@ -52,7 +52,22 @@ public sealed class PlayingTrack
             DelayBy = TimeSpan.FromSeconds(offset)
         };
 
-        Provider = new FadeSampleProvider(provider);
+        _fadeSampleProvider = new FadeSampleProvider(provider,Reader);
+        Provider = _fadeSampleProvider;
+    }
+
+    public event EventHandler? FadeOutCompleted;
+    public void BeginFadeOut(TimeSpan? duration = null)
+    {
+        TimeSpan _duration = duration ?? TimeSpan.FromSeconds(Math.Max(Math.Abs(Track.GapSeconds) - 0.5,0)); // Default to 5 seconds if no duration is provided
+
+        _fadeSampleProvider.FadeOutCompleted += FadeOutCompleted;
+        _fadeSampleProvider.BeginFadeOut(_duration);
+    }
+
+    private void _fadeSampleProvider_FadeOutCompleted(object? sender, EventArgs e)
+    {
+        throw new NotImplementedException();
     }
 
     // Create PlayingTrack off the UI thread to avoid blocking the UI when opening files / resampling
@@ -61,8 +76,8 @@ public sealed class PlayingTrack
         return Task.Run(() => new PlayingTrack(track, offset));
     }
 
-    public TimeSpan TotalTime => Reader.TotalTime;
-    public TimeSpan CurrentTime => Reader.CurrentTime;
+    public TimeSpan TotalTime => Reader?.TotalTime??TimeSpan.MinValue;
+    public TimeSpan CurrentTime => Reader?.CurrentTime??TimeSpan.MinValue;
 
     public void Seek(TimeSpan time)
     {
@@ -78,9 +93,17 @@ public sealed class PlayingTrack
             // Seeking failed, ignore to prevent crash
         }
     }
+
+    public void Dispose()
+    {
+        try
+        {
+            this.Reader.Dispose();
+        } catch { }        
+    }
 }
 
-public class FadeSampleProvider : ISampleProvider
+public class FadeSampleProvider : ISampleProvider, IDisposable
 {
     private readonly ISampleProvider source;
     public WaveFormat WaveFormat => source.WaveFormat;
@@ -90,9 +113,11 @@ public class FadeSampleProvider : ISampleProvider
     int samplesRemaining = 0; // samples left in fade (per channel sample count)
     public event EventHandler? FadeOutCompleted;
 
+    IDisposable reader;
+
     bool fadeIn = true;
 
-    public FadeSampleProvider(ISampleProvider source)
+    public FadeSampleProvider(ISampleProvider source, IDisposable reaser)
     {
         this.source = source;
     }
@@ -144,5 +169,17 @@ public class FadeSampleProvider : ISampleProvider
             }
         }
         return read;
+    }
+
+    public void Dispose()
+    {
+        try
+        {
+            this.reader.Dispose();
+        }
+        catch
+        {
+            // Ignore exceptions during dispose
+        }
     }
 }

@@ -2,19 +2,13 @@ using Caliburn.Micro;
 using DJCMS.Models;
 using DJCMS10.Models;
 using Microsoft.Win32;
-using NAudio.Dsp;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
-using System;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace DJCMS.ViewModels
 {
@@ -613,6 +607,8 @@ namespace DJCMS.ViewModels
             }
         }
 
+        bool Buffering = false;
+
         private async Task MonitorPlayingEvents(double progress)
         {
             // defensive checks
@@ -644,14 +640,14 @@ namespace DJCMS.ViewModels
                     try
                     {
                         // make buffer audible and swap
-                        _bufferTrack.Reader.Volume = 1.0f;
+                        //_bufferTrack.Reader.Volume = 1.0f;
                         var old = _currentTrack;
                         _currentTrack = _bufferTrack;
-                        _output.Play();
+                        //_output.Play();
                         IsPlaying = true;
                         SelectedTrack = _bufferTrack.Track;
                         CurrentPlayingTrackId = _bufferTrack.Track.ID;
-                        //_b/ufferTrack = null;
+                        _bufferTrack = null;
 
                         // dispose previous reader if it's no longer used
                         try { old.Reader.Dispose(); } catch { }
@@ -678,10 +674,11 @@ namespace DJCMS.ViewModels
                 if (_currentTrack.Track.GapSeconds > -1)
                 {
                     var nextTrack = GetNextTrack();
-                    if (nextTrack != null)
+                    if (nextTrack != null && !Buffering)
                     {
                         try
                         {
+                            Buffering = true;
                             await PrepareBufferTrackAsync(nextTrack, _currentTrack.Track.GapSeconds);
 
                             // Verify buffer track was created successfully
@@ -695,7 +692,12 @@ namespace DJCMS.ViewModels
                                     IsPlaying = true;
                                     SelectedTrack = nextTrack;
                                     CurrentPlayingTrackId = nextTrack.ID;
-                                    //_bufferTrack = null;
+
+                                    Task.Run(() =>
+                                    {
+                                        Thread.Sleep((int)(((double)_currentTrack.Track.GapSeconds + 0.5) * 1000.0)); // Wait for 1 second to ensure the track has started playing
+                                        Buffering = false;
+                                    });
                                     try { old.Reader.Dispose(); } catch { }
                                 }
                                 catch
@@ -703,10 +705,12 @@ namespace DJCMS.ViewModels
                                     try { _output.Stop(); } catch { }
                                     IsPlaying = false;
                                     CurrentPlayingTrackId = null;
+                                    Buffering = false;
                                 }
                             }
                             else
                             {
+                                Buffering = false;
                                 // Buffer track creation failed, stop playback
                                 try { _output.Stop(); } catch { }
                                 IsPlaying = false;
@@ -719,6 +723,7 @@ namespace DJCMS.ViewModels
                             try { _output.Stop(); } catch { }
                             IsPlaying = false;
                             CurrentPlayingTrackId = null;
+                            Buffering = false;
                         }
                     }
                     else
@@ -726,6 +731,7 @@ namespace DJCMS.ViewModels
                         try { _output.Stop(); } catch { }
                         IsPlaying = false;
                         CurrentPlayingTrackId = null;
+                        Buffering = false;
                     }
                 }
             }
@@ -744,10 +750,10 @@ namespace DJCMS.ViewModels
                         {
                             try
                             {
+                                _currentTrack.BeginFadeOut();
                                 _currentTrack.fadingOut = true;
                                 _bufferTrack = await PlayingTrack.CreateAsync(nextTrack, 0);
                                 _bufferTrack.Reader.Volume = _bufferTrack.Track.FadeInOnCross? 0.0f : 1.0f; // Start the next track muted for fade-in
-                                _bufferTrack.fadingIn = true;
                                 _mixerX.AddMixerInput(_bufferTrack.Provider);
                             }
                             catch
@@ -763,21 +769,6 @@ namespace DJCMS.ViewModels
                         }
                     }
                 }
-            }
-
-            // if tracks are crossfading, adjust their volumes based on the remaining time of the current track
-            if (_currentTrack.fadingOut && _bufferTrack != null)
-            {
-                double denom = Math.Max(1.0, Math.Abs(_currentTrack.Track.GapSeconds) * 1000.0);
-                float ratio = (float)Math.Clamp(remainingMs / denom, 0.0, 1.0);
-
-                await Task.Run(() =>
-                {
-                    // do volume fade out/in (clamped)
-                    try { _currentTrack.Reader.Volume = Math.Max(0.0f, ratio); } catch { }
-                    try { _bufferTrack.Reader.Volume = Math.Min(1.0f, _bufferTrack.Track.FadeInOnCross ? (1.0f - ratio) : (1.0f)); } catch { }
-                });
-                
             }
 
             // update our progress tracker for the next tick
