@@ -45,7 +45,31 @@ namespace DJCMS.ViewModels
         private float _band8 = 0f;
         private float _band9 = 0f;
 
+        private string _currentTime = "0:00";
+        public string CurrentTime
+        {
+            get => _currentTime;
+            set
+            {
+                if (_currentTime == value)
+                    return;
+                _currentTime = value;
+                NotifyOfPropertyChange();
+            }
+        }
 
+        private string _totalTime = "0:00";
+        public string TotalTime
+        {
+            get => _totalTime;
+            set
+            {
+                if (_totalTime == value)
+                    return;
+                _totalTime = value;
+                NotifyOfPropertyChange();
+            }
+        }
 
         public MainWindowViewModel()
         {
@@ -575,29 +599,67 @@ namespace DJCMS.ViewModels
 
         private void MonitorPlayingEvents(double progress)
         {
-            //if the progress is not moving, the current playing track is probably done
-            if (_progress == progress)
+            // defensive checks
+            if (_currentTrack == null)
             {
-                //check if we are corsssfading and need to switch to the buffer track
-                if (_currentTrack.Track.GapSeconds < 0 &&
-                !_mixer.MixerInputs.Any(x => x == _currentTrack?.Provider) && _bufferTrack != null)
-                {
-                    _bufferTrack.Reader.Volume = 1.0f;
-                    _currentTrack = _bufferTrack;
-                    _output.Play();
-                    IsPlaying = true;
-                    SelectedTrack = _bufferTrack.Track;
-                    CurrentPlayingTrackId = _bufferTrack.Track.ID;
-                    _bufferTrack = null;
-                }
+                CurrentTime = $"0:00";
+                TotalTime = $"0:00";
+
+                _progress = progress;
                 return;
             }
-
-            //if the progress is over 90% and there is no mixer input,
-            //we ended a non fading track, and need to load the next track
-            if (progress > 0.9 && !_mixer.MixerInputs.Any())
+            else
             {
-                if (_currentTrack?.Track.GapSeconds > -1)
+                try
+                {
+                    CurrentTime = $"{(int)_currentTrack.CurrentTime.TotalMinutes}:{_currentTrack.CurrentTime.Seconds:D2}";
+                    TotalTime = $"{(int)_currentTrack.TotalTime.TotalMinutes}:{_currentTrack.TotalTime.Seconds:D2}";
+                }
+                catch { }                
+            }
+
+            // if the progress is not moving (use epsilon to avoid float jitter), the current playing track is probably done
+            if (Math.Abs(_progress - progress) < 0.00001)
+            {
+                // check if we are crossfading and need to switch to the buffer track
+                if (_currentTrack.Track.GapSeconds < 0 &&
+                    !_mixer.MixerInputs.Any(x => x == _currentTrack.Provider) && _bufferTrack != null)
+                {
+                    try
+                    {
+                        // make buffer audible and swap
+                        _bufferTrack.Reader.Volume = 1.0f;
+                        var old = _currentTrack;
+                        _currentTrack = _bufferTrack;
+                        _output.Play();
+                        IsPlaying = true;
+                        SelectedTrack = _bufferTrack.Track;
+                        CurrentPlayingTrackId = _bufferTrack.Track.ID;
+                        //_b/ufferTrack = null;
+
+                        // dispose previous reader if it's no longer used
+                        try { old.Reader.Dispose(); } catch { }
+                    }
+                    catch
+                    {
+                        // if swap fails, ensure state is consistent
+                        try { _output.Stop(); } catch { }
+                        IsPlaying = false;
+                        CurrentPlayingTrackId = null;
+                        _bufferTrack = null;
+                    }
+                    return;
+                }                
+            }
+
+            // prepare some timing helpers
+            double remainingMs = (_currentTrack.Reader.TotalTime - _currentTrack.Reader.CurrentTime).TotalMilliseconds;
+
+            // if the progress is over 90% (or very little remaining time) and there is no mixer input,
+            // we ended a non-fading track, and need to load the next track
+            if ((progress > 0.9 || remainingMs < 500) && !_mixer.MixerInputs.Any())
+            {
+                if (_currentTrack.Track.GapSeconds > -1)
                 {
                     var nextTrack = GetNextTrack();
                     if (nextTrack != null)
@@ -609,17 +671,28 @@ namespace DJCMS.ViewModels
                             // Verify buffer track was created successfully
                             if (_bufferTrack != null)
                             {
-                                _currentTrack = _bufferTrack;
-                                _output.Play();
-                                IsPlaying = true;
-                                SelectedTrack = nextTrack;
-                                CurrentPlayingTrackId = nextTrack.ID;
-                                _bufferTrack = null;
+                                try
+                                {
+                                    var old = _currentTrack;
+                                    _currentTrack = _bufferTrack;
+                                    _output.Play();
+                                    IsPlaying = true;
+                                    SelectedTrack = nextTrack;
+                                    CurrentPlayingTrackId = nextTrack.ID;
+                                    //_bufferTrack = null;
+                                    try { old.Reader.Dispose(); } catch { }
+                                }
+                                catch
+                                {
+                                    try { _output.Stop(); } catch { }
+                                    IsPlaying = false;
+                                    CurrentPlayingTrackId = null;
+                                }
                             }
                             else
                             {
                                 // Buffer track creation failed, stop playback
-                                _output.Stop();
+                                try { _output.Stop(); } catch { }
                                 IsPlaying = false;
                                 CurrentPlayingTrackId = null;
                             }
@@ -627,57 +700,67 @@ namespace DJCMS.ViewModels
                         catch
                         {
                             // Track loading failed, stop playback gracefully
-                            try
-                            {
-                                _output.Stop();
-                            }
-                            catch { }
+                            try { _output.Stop(); } catch { }
                             IsPlaying = false;
                             CurrentPlayingTrackId = null;
                         }
                     }
                     else
                     {
-                        _output.Stop();
+                        try { _output.Stop(); } catch { }
                         IsPlaying = false;
                         CurrentPlayingTrackId = null;
                     }
                 }
             }
 
-            // if the current track is in the player,
-            // and the current track has a negative gap (indicating a crossfade) and progress is greater than 50%
-            else if (_currentTrack != null && _currentTrack.Track.GapSeconds < 0 && progress > 0.5)
+            // if the current track has a negative gap (indicating a crossfade) and progress is greater than 50%
+            else if (_currentTrack.Track.GapSeconds < 0 && progress > 0.5)
             {
-                //check if it's time to kick off the crossfade, if it's not already set
-                if (!_currentTrack.fadingOut &&
-                    (_currentTrack.Reader.TotalTime - _currentTrack.Reader.CurrentTime).TotalMilliseconds < Math.Abs(_currentTrack.Track.GapSeconds)*1000)
+                // check if it's time to kick off the crossfade, if it's not already set
+                if (!_currentTrack.fadingOut)
                 {
-                    Console.WriteLine(" probably corssfade");
-                    var nextTrack = GetNextTrack();
-                    if (nextTrack != null)
+                    double triggerMs = Math.Abs(_currentTrack.Track.GapSeconds) * 1000.0;
+                    if (remainingMs < triggerMs)
                     {
-                        _currentTrack.fadingOut = true;
-                        _bufferTrack = new PlayingTrack(nextTrack, 0);
-                        _bufferTrack.Reader.Volume = 0.0f; // Start the next track muted for fade-in
-                        _bufferTrack.fadingIn = true;
-                        _mixer.AddMixerInput(_bufferTrack.Provider);
-                    }                        
+                        var nextTrack = GetNextTrack();
+                        if (nextTrack != null)
+                        {
+                            try
+                            {
+                                _currentTrack.fadingOut = true;
+                                _bufferTrack = new PlayingTrack(nextTrack, 0);
+                                _bufferTrack.Reader.Volume = 0.0f; // Start the next track muted for fade-in
+                                _bufferTrack.fadingIn = true;
+                                _mixer.AddMixerInput(_bufferTrack.Provider);
+                            }
+                            catch
+                            {
+                                // failed to prepare buffer, reset flags
+                                _currentTrack.fadingOut = false;
+                                if (_bufferTrack != null)
+                                {
+                                    try { _bufferTrack.Reader.Dispose(); } catch { }
+                                    _bufferTrack = null;
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
             // if tracks are crossfading, adjust their volumes based on the remaining time of the current track
-            if (_currentTrack != null && _currentTrack.fadingOut && _bufferTrack != null)
+            if (_currentTrack.fadingOut && _bufferTrack != null)
             {
-                float ratio = (float)((_currentTrack.Reader.TotalTime - _currentTrack.Reader.CurrentTime).TotalMilliseconds)
-                                / (float)(Math.Abs(_currentTrack.Track.GapSeconds) * 1000f);
+                double denom = Math.Max(1.0, Math.Abs(_currentTrack.Track.GapSeconds) * 1000.0);
+                float ratio = (float)Math.Clamp(remainingMs / denom, 0.0, 1.0);
 
-                //do volume fade out
-                _currentTrack.Reader.Volume = Math.Max(0.0f, ratio);
-                _bufferTrack.Reader.Volume = Math.Min(1.0f, 1.0f-(ratio));
+                // do volume fade out/in (clamped)
+                try { _currentTrack.Reader.Volume = Math.Max(0.0f, ratio); } catch { }
+                try { _bufferTrack.Reader.Volume = Math.Min(1.0f, 1.0f - ratio); } catch { }
             }
 
-            //update our progress tracker for the next tick
+            // update our progress tracker for the next tick
             _progress = progress;
         }
 
@@ -794,7 +877,7 @@ namespace DJCMS.ViewModels
                 _bufferTrack = new PlayingTrack(track, offset);
                 _mixer.AddMixerInput(_bufferTrack.Provider);
             }
-            catch
+            catch (Exception e)
             {
                 _bufferTrack = null;
             }
@@ -924,6 +1007,10 @@ namespace DJCMS.ViewModels
             try
             {
                 Stop();
+
+                _currentTrack?.Reader.Dispose();
+                _bufferTrack?.Reader.Dispose();
+
                 _currentTrack = null;
                 _bufferTrack = null;
                 _selectedTrack = null;

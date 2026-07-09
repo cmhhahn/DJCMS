@@ -1080,7 +1080,7 @@
                                 <Grid Margin="4">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="300"/>
+                                        <ColumnDefinition Width="340"/>
                                     </Grid.ColumnDefinitions>
 
                                     <StackPanel Orientation="Horizontal">
@@ -1129,10 +1129,11 @@
                                                 </i:EventTrigger>
                                             </i:Interaction.Triggers>
                                         </Button>
-                                        <Border Background="{StaticResource ControlSurfaceBrush}"
+                                        <Border Width="40" Background="{StaticResource ControlSurfaceBrush}"
                                                 CornerRadius="4"
                                                 Padding="6,2">
-                                            <TextBlock Text="{Binding GapSeconds, StringFormat={}{0:+0.##;-0.##;0}s}"
+                                            <TextBlock HorizontalAlignment="Center" TextAlignment="Center"
+                                                Text="{Binding GapSeconds, StringFormat={}{0:+0.##;-0.##;0}s}"
                                                        Foreground="White"
                                                        FontWeight="SemiBold"/>
                                         </Border>
@@ -1418,11 +1419,20 @@
                     <StackPanel Orientation="Horizontal"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center">
+
+                        <TextBlock Width="50" Text="{Binding CurrentTime}" Foreground="Gray"  FontWeight="SemiBold" FontSize="14"
+                                   HorizontalAlignment="Center" 
+                                   VerticalAlignment="Center" TextAlignment="Center" />
+                        
                         <Slider Style="{StaticResource SpotifySliderStyle}"
                                 Maximum="1.0"
                                 Value="{Binding TrackProgress, Mode=TwoWay}"
-                                Width="500"
-                                Margin="20"/>
+                                Width="380"
+                                Margin="5"/>
+
+                        <TextBlock Width="50" Text="{Binding TotalTime}" Foreground="Gray"  FontWeight="SemiBold" FontSize="14"
+                               HorizontalAlignment="Center" Margin="0,0,12,0"
+                               VerticalAlignment="Center" TextAlignment="Center" />
 
                         <Button Width="40" Height="40" 
                                 x:Name="SkipBackward"
