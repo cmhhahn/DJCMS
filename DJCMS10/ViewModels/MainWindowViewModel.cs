@@ -730,7 +730,7 @@ namespace DJCMS.ViewModels
                             {
                                 _currentTrack.fadingOut = true;
                                 _bufferTrack = new PlayingTrack(nextTrack, 0);
-                                _bufferTrack.Reader.Volume = 0.0f; // Start the next track muted for fade-in
+                                _bufferTrack.Reader.Volume = _bufferTrack.Track.FadeInOnCross? 0.0f : 1.0f; // Start the next track muted for fade-in
                                 _bufferTrack.fadingIn = true;
                                 _mixer.AddMixerInput(_bufferTrack.Provider);
                             }
@@ -757,7 +757,7 @@ namespace DJCMS.ViewModels
 
                 // do volume fade out/in (clamped)
                 try { _currentTrack.Reader.Volume = Math.Max(0.0f, ratio); } catch { }
-                try { _bufferTrack.Reader.Volume = Math.Min(1.0f, 1.0f - ratio); } catch { }
+                try { _bufferTrack.Reader.Volume = Math.Min(1.0f, _bufferTrack.Track.FadeInOnCross ? (1.0f - ratio) : (1.0f)); } catch { }
             }
 
             // update our progress tracker for the next tick

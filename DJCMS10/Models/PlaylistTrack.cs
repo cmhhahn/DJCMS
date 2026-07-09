@@ -54,6 +54,20 @@ namespace DJCMS.Models
             }
         }
 
+        private bool _fadeInOnCross;
+        public bool FadeInOnCross
+        {
+            get => _fadeInOnCross;
+            set
+            {
+                if (_fadeInOnCross == value)
+                    return;
+
+                _fadeInOnCross = value;
+                OnPropertyChanged();
+            }
+        }
+
         [JsonIgnore]
         public string Duration
         {

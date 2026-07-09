@@ -538,6 +538,44 @@
                             </Setter>
                         </Style.Setters>
                     </Style>
+
+                    <!-- CrossFade Toggle style: matches regular Button visual but supports Checked highlight using DarkAccentColor -->
+                    <Style x:Key="CrossFadeToggleStyle" TargetType="ToggleButton">
+                        <Setter Property="Width" Value="Auto" />
+                        <Setter Property="Height" Value="Auto" />
+                        <Setter Property="Background" Value="{StaticResource ControlSurfaceBrush}" />
+                        <Setter Property="Foreground" Value="White" />
+                        <Setter Property="BorderThickness" Value="0" />
+                        <Setter Property="Padding" Value="6,2" />
+                        <Setter Property="Margin" Value="2" />
+                        <Setter Property="Cursor" Value="Hand" />
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ToggleButton">
+                                    <Border x:Name="Border"
+                                            Background="{TemplateBinding Background}"
+                                            CornerRadius="4"
+                                            Padding="{TemplateBinding Padding}"
+                                            BorderThickness="{TemplateBinding BorderThickness}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Border" Property="Background" Value="{StaticResource SpotifyHoverBrush}" />
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter TargetName="Border" Property="Opacity" Value="0.9" />
+                                        </Trigger>
+                                        <Trigger Property="IsChecked" Value="True">
+                                            <!-- Use DarkAccentColor as the highlight when checked -->
+                                            <Setter TargetName="Border" Property="Background" Value="{StaticResource PlaylistSelectedBrush}" />
+                                            <Setter Property="Foreground" Value="White" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
                     
                     <Style x:Key="DarkPlaylistListBoxStyle"
                            TargetType="ListBox">
@@ -1080,7 +1118,7 @@
                                 <Grid Margin="4">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="340"/>
+                                        <ColumnDefinition Width="400"/>
                                     </Grid.ColumnDefinitions>
 
                                     <StackPanel Orientation="Horizontal">
@@ -1120,7 +1158,12 @@
                                             </i:Interaction.Triggers>
                                         </Button>
 
-                                        <Button Content="-">
+                                        <ToggleButton x:Name="CrossFadeToggle" Margin="4" Style="{StaticResource CrossFadeToggleStyle}"
+                                                      IsChecked="{Binding FadeInOnCross, Mode=TwoWay}">
+                                            <TextBlock Text="FADE" />
+                                        </ToggleButton>
+
+                                        <Button Content="-" Margin="3">
                                             <i:Interaction.Triggers>
                                                 <i:EventTrigger EventName="Click">
                                                     <cal:ActionMessage MethodName="Minus">
@@ -1137,7 +1180,7 @@
                                                        Foreground="White"
                                                        FontWeight="SemiBold"/>
                                         </Border>
-                                        <Button Content="+">
+                                        <Button Content="+" Margin="3">
                                             <i:Interaction.Triggers>
                                                 <i:EventTrigger EventName="Click">
                                                     <cal:ActionMessage MethodName="Plus">
