@@ -21,7 +21,7 @@ namespace DJCMS.ViewModels
     public class MainWindowViewModel : Screen
     {
         private readonly DispatcherTimer _timer;
-        private readonly MixingSampleProvider _mixer;
+        private readonly MixingSampleProvider _mixerX;
         private readonly EqualizerSampleProvider _equalizer;
         private readonly WaveOutEvent _output;
         private readonly WaveFormat _mixerFormat = WaveFormat.CreateIeeeFloatWaveFormat(44100, 2);
@@ -78,13 +78,13 @@ namespace DJCMS.ViewModels
             LibraryFolder = new ObservableCollection<PlaylistTrack>();
 
             _output = new WaveOutEvent();
-            _mixer = new MixingSampleProvider(_mixerFormat)
+            _mixerX = new MixingSampleProvider(_mixerFormat)
             {
                 ReadFully = false
             };
 
             // Create equalizer and wire it to the mixer
-            _equalizer = new EqualizerSampleProvider(_mixer);
+            _equalizer = new EqualizerSampleProvider(_mixerX);
 
             try
             {
@@ -473,9 +473,25 @@ namespace DJCMS.ViewModels
             clickyTime = new Tuple<Guid, DateTime>(trackId, DateTime.Now);
         }
 
+        public void FadeAllMixerTracksOut()
+        {
+            foreach (var input in _mixerX.MixerInputs.ToList())
+            {
+                (input as FadeSampleProvider)?.FadeOutCompleted += (s, e) =>
+                {
+                    try
+                    {
+                        _mixerX.RemoveMixerInput(input);
+                    }
+                    catch { }
+                };
+                (input as FadeSampleProvider)?.BeginFadeOut(TimeSpan.FromMilliseconds(200)); // Fade out over 200ms
+            }
+        }
+
         public async void PlayTrack(Guid trackId)
         {
-            _mixer.RemoveAllMixerInputs();
+            FadeAllMixerTracksOut();
 
             var track = GetListTrack(trackId);
             if (track != null)
@@ -483,7 +499,7 @@ namespace DJCMS.ViewModels
                 try
                 {
                     _currentTrack = await PlayingTrack.CreateAsync(track, 0);
-                    _mixer.AddMixerInput(_currentTrack.Provider);
+                    _mixerX.AddMixerInput(_currentTrack.Provider);
                     try
                     {
                         _output?.Play();
@@ -623,7 +639,7 @@ namespace DJCMS.ViewModels
             {
                 // check if we are crossfading and need to switch to the buffer track
                 if (_currentTrack.Track.GapSeconds < 0 &&
-                    !_mixer.MixerInputs.Any(x => x == _currentTrack.Provider) && _bufferTrack != null)
+                    !_mixerX.MixerInputs.Any(x => x == _currentTrack.Provider) && _bufferTrack != null)
                 {
                     try
                     {
@@ -657,7 +673,7 @@ namespace DJCMS.ViewModels
 
             // if the progress is over 90% (or very little remaining time) and there is no mixer input,
             // we ended a non-fading track, and need to load the next track
-            if ((progress > 0.9 || remainingMs < 500) && !_mixer.MixerInputs.Any())
+            if ((progress > 0.9 || remainingMs < 500) && !_mixerX.MixerInputs.Any())
             {
                 if (_currentTrack.Track.GapSeconds > -1)
                 {
@@ -732,7 +748,7 @@ namespace DJCMS.ViewModels
                                 _bufferTrack = await PlayingTrack.CreateAsync(nextTrack, 0);
                                 _bufferTrack.Reader.Volume = _bufferTrack.Track.FadeInOnCross? 0.0f : 1.0f; // Start the next track muted for fade-in
                                 _bufferTrack.fadingIn = true;
-                                _mixer.AddMixerInput(_bufferTrack.Provider);
+                                _mixerX.AddMixerInput(_bufferTrack.Provider);
                             }
                             catch
                             {
@@ -803,11 +819,12 @@ namespace DJCMS.ViewModels
             {
                 try
                 {
-                    _mixer.RemoveAllMixerInputs();
+                    FadeAllMixerTracksOut();
+
                     _selectionID = nextTrack.ID;
                     SelectedTrack = nextTrack;
                     _currentTrack = await PlayingTrack.CreateAsync(nextTrack, 0);
-                    _mixer.AddMixerInput(_currentTrack.Provider);
+                    _mixerX.AddMixerInput(_currentTrack.Provider);
                     CurrentPlayingTrackId = nextTrack.ID;
 
                     if (IsPlaying)
@@ -842,11 +859,12 @@ namespace DJCMS.ViewModels
             {
                 try
                 {
-                    _mixer.RemoveAllMixerInputs();
+                    FadeAllMixerTracksOut();
+
                     _selectionID = previousTrack.ID;
                     SelectedTrack = previousTrack;
                     _currentTrack = await PlayingTrack.CreateAsync(previousTrack, 0);
-                    _mixer.AddMixerInput(_currentTrack.Provider);
+                    _mixerX.AddMixerInput(_currentTrack.Provider);
                     CurrentPlayingTrackId = previousTrack.ID;
 
                     if (IsPlaying)
@@ -879,7 +897,7 @@ namespace DJCMS.ViewModels
             try
             {
                 _bufferTrack = await PlayingTrack.CreateAsync(track, offset);
-                _mixer.AddMixerInput(_bufferTrack.Provider);
+                _mixerX.AddMixerInput(_bufferTrack.Provider);
             }
             catch (Exception e)
             {
@@ -1125,7 +1143,7 @@ namespace DJCMS.ViewModels
 
                 try
                 {
-                    _mixer.RemoveAllMixerInputs();
+                    _mixerX.RemoveAllMixerInputs();
                 }
                 catch { }
 
