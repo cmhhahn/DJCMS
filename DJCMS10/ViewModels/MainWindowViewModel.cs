@@ -1,5 +1,8 @@
 using Caliburn.Micro;
 using DJCMS.Models;
+using DJCMS10.Models;
+using Microsoft.Win32;
+using NAudio.Dsp;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using System;
@@ -11,8 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
-using Microsoft.Win32;
-using NAudio.Dsp;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace DJCMS.ViewModels
 {
@@ -20,6 +22,7 @@ namespace DJCMS.ViewModels
     {
         private readonly DispatcherTimer _timer;
         private readonly MixingSampleProvider _mixer;
+        private readonly EqualizerSampleProvider _equalizer;
         private readonly WaveOutEvent _output;
         private readonly WaveFormat _mixerFormat = WaveFormat.CreateIeeeFloatWaveFormat(44100, 2);
 
@@ -30,7 +33,19 @@ namespace DJCMS.ViewModels
         private Guid? _selectionID;
         private double _volume = 0.5;
 
-        
+        // Equalizer band gains (in dB)
+        private float _band0 = 0f;
+        private float _band1 = 0f;
+        private float _band2 = 0f;
+        private float _band3 = 0f;
+        private float _band4 = 0f;
+        private float _band5 = 0f;
+        private float _band6 = 0f;
+        private float _band7 = 0f;
+        private float _band8 = 0f;
+        private float _band9 = 0f;
+
+
 
         public MainWindowViewModel()
         {
@@ -43,11 +58,15 @@ namespace DJCMS.ViewModels
             {
                 ReadFully = false
             };
+
+            // Create equalizer and wire it to the mixer
+            _equalizer = new EqualizerSampleProvider(_mixer);
+
             try
             {
                 _output.Volume = (float)_volume;
 
-                _output.Init(_mixer);
+                _output.Init(_equalizer);
                 //_output.Play();
 
                 // Ensure any UI property changes happen on the UI thread
@@ -78,6 +97,18 @@ namespace DJCMS.ViewModels
 
             AutoLoad();
         }
+
+        private ObservableCollection<PlaylistFile> _playlistLibrary;
+        public ObservableCollection<PlaylistFile> PlaylistLibrary
+        {
+            get => _playlistLibrary;
+            set
+            {
+                _playlistLibrary = value;
+                NotifyOfPropertyChange();
+            }
+        }
+
 
         private ObservableCollection<PlaylistTrack> _libraryFolder;
         public ObservableCollection<PlaylistTrack> LibraryFolder
@@ -140,6 +171,137 @@ namespace DJCMS.ViewModels
             }
         }
 
+        // Equalizer Band Properties (20Hz - 20kHz)
+        public float Band0
+        {
+            get => _band0;
+            set
+            {
+                if (Math.Abs(_band0 - value) < 0.01f)
+                    return;
+                _band0 = value;
+                _equalizer?.SetGain(0, value);
+                NotifyOfPropertyChange();
+            }
+        }
+
+        public float Band1
+        {
+            get => _band1;
+            set
+            {
+                if (Math.Abs(_band1 - value) < 0.01f)
+                    return;
+                _band1 = value;
+                _equalizer?.SetGain(1, value);
+                NotifyOfPropertyChange();
+            }
+        }
+
+        public float Band2
+        {
+            get => _band2;
+            set
+            {
+                if (Math.Abs(_band2 - value) < 0.01f)
+                    return;
+                _band2 = value;
+                _equalizer?.SetGain(2, value);
+                NotifyOfPropertyChange();
+            }
+        }
+
+        public float Band3
+        {
+            get => _band3;
+            set
+            {
+                if (Math.Abs(_band3 - value) < 0.01f)
+                    return;
+                _band3 = value;
+                _equalizer?.SetGain(3, value);
+                NotifyOfPropertyChange();
+            }
+        }
+
+        public float Band4
+        {
+            get => _band4;
+            set
+            {
+                if (Math.Abs(_band4 - value) < 0.01f)
+                    return;
+                _band4 = value;
+                _equalizer?.SetGain(4, value);
+                NotifyOfPropertyChange();
+            }
+        }
+
+        public float Band5
+        {
+            get => _band5;
+            set
+            {
+                if (Math.Abs(_band5 - value) < 0.01f)
+                    return;
+                _band5 = value;
+                _equalizer?.SetGain(5, value);
+                NotifyOfPropertyChange();
+            }
+        }
+
+        public float Band6
+        {
+            get => _band6;
+            set
+            {
+                if (Math.Abs(_band6 - value) < 0.01f)
+                    return;
+                _band6 = value;
+                _equalizer?.SetGain(6, value);
+                NotifyOfPropertyChange();
+            }
+        }
+
+        public float Band7
+        {
+            get => _band7;
+            set
+            {
+                if (Math.Abs(_band7 - value) < 0.01f)
+                    return;
+                _band7 = value;
+                _equalizer?.SetGain(7, value);
+                NotifyOfPropertyChange();
+            }
+        }
+
+        public float Band8
+        {
+            get => _band8;
+            set
+            {
+                if (Math.Abs(_band8 - value) < 0.01f)
+                    return;
+                _band8 = value;
+                _equalizer?.SetGain(8, value);
+                NotifyOfPropertyChange();
+            }
+        }
+
+        public float Band9
+        {
+            get => _band9;
+            set
+            {
+                if (Math.Abs(_band9 - value) < 0.01f)
+                    return;
+                _band9 = value;
+                _equalizer?.SetGain(9, value);
+                NotifyOfPropertyChange();
+            }
+        }
+
         private PlaylistTrack? _selectedTrack;
         public PlaylistTrack? SelectedTrack
         {
@@ -172,6 +334,19 @@ namespace DJCMS.ViewModels
                 if (_isPlaying == value)
                     return;
                 _isPlaying = value;
+                NotifyOfPropertyChange();
+            }
+        }
+
+        private Guid? _currentPlayingTrackId;
+        public Guid? CurrentPlayingTrackId
+        {
+            get => _currentPlayingTrackId;
+            set
+            {
+                if (_currentPlayingTrackId == value)
+                    return;
+                _currentPlayingTrackId = value;
                 NotifyOfPropertyChange();
             }
         }
@@ -221,6 +396,7 @@ namespace DJCMS.ViewModels
                 {
                     _output?.Play();
                     IsPlaying = true;
+                    CurrentPlayingTrackId = _selectionID;
                 }
                 catch
                 {
@@ -229,23 +405,7 @@ namespace DJCMS.ViewModels
             }
             else
             {
-                _mixer.RemoveAllMixerInputs();
-
-                var track = GetListTrack(_selectionID.Value);
-                if (track != null)
-                {
-                    _currentTrack = new PlayingTrack(track, 0);
-                    _mixer.AddMixerInput(_currentTrack.Provider);
-                    try
-                    {
-                        _output?.Play();
-                        IsPlaying = true;
-                    }
-                    catch
-                    {
-                        IsPlaying = false;
-                    }
-                }
+                PlayTrack(_selectionID.Value);
             }
         }
 
@@ -255,10 +415,72 @@ namespace DJCMS.ViewModels
             {
                 _output?.Stop();
                 IsPlaying = false;
+                CurrentPlayingTrackId = null;
             }
             catch
             {
                 // ignore
+            }
+        }
+
+
+        private Tuple<Guid, DateTime> clickyPTime = new Tuple<Guid, DateTime>(Guid.Empty, DateTime.MinValue);
+
+        public void ClickyPlaylist(Guid listId)
+        {
+            if (clickyPTime.Item1 == listId && (DateTime.Now - clickyPTime.Item2).TotalMilliseconds < 200)
+            {
+                LoadAPlaylistFile(GetPlaylistFromId(listId)?.FilePath??"");
+            }
+
+            clickyPTime = new Tuple<Guid, DateTime>(listId, DateTime.Now);
+        }
+
+
+        private Tuple<Guid, DateTime> clickyTime = new Tuple<Guid, DateTime>(Guid.Empty, DateTime.MinValue);
+
+        public void ClickyPlayTrack(Guid trackId)
+        {
+            if(clickyTime.Item1 == trackId && (DateTime.Now - clickyTime.Item2).TotalMilliseconds < 200)
+            {
+                PlayTrack(trackId);
+            }
+
+            clickyTime = new Tuple<Guid, DateTime>(trackId, DateTime.Now);
+        }
+
+        public void PlayTrack(Guid trackId)
+        {
+            _mixer.RemoveAllMixerInputs();
+
+            var track = GetListTrack(trackId);
+            if (track != null)
+            {
+                try
+                {
+                    _currentTrack = new PlayingTrack(track, 0);
+                    _mixer.AddMixerInput(_currentTrack.Provider);
+                    try
+                    {
+                        _output?.Play();
+                        IsPlaying = true;
+                        CurrentPlayingTrackId = track.ID;
+                    }
+                    catch
+                    {
+                        IsPlaying = false;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    IsPlaying = false;
+                    try
+                    {
+                        MessageBox.Show($"Failed to load track: {track.FileName}\n\nError: {ex.Message}",
+                            "Playback Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+                    catch { }
+                }
             }
         }
 
@@ -363,16 +585,44 @@ namespace DJCMS.ViewModels
                     var nextTrack = GetNextTrack();
                     if (nextTrack != null)
                     {
-                        PlayTrack(nextTrack, _currentTrack.Track.GapSeconds);
-                        _currentTrack = _bufferTrack;
-                        _output.Play();
-                        IsPlaying = true;
-                        SelectedTrack = nextTrack;
+                        try
+                        {
+                            PlayTrack(nextTrack, _currentTrack.Track.GapSeconds);
+
+                            // Verify buffer track was created successfully
+                            if (_bufferTrack != null)
+                            {
+                                _currentTrack = _bufferTrack;
+                                _output.Play();
+                                IsPlaying = true;
+                                SelectedTrack = nextTrack;
+                                CurrentPlayingTrackId = nextTrack.ID;
+                            }
+                            else
+                            {
+                                // Buffer track creation failed, stop playback
+                                _output.Stop();
+                                IsPlaying = false;
+                                CurrentPlayingTrackId = null;
+                            }
+                        }
+                        catch
+                        {
+                            // Track loading failed, stop playback gracefully
+                            try
+                            {
+                                _output.Stop();
+                            }
+                            catch { }
+                            IsPlaying = false;
+                            CurrentPlayingTrackId = null;
+                        }
                     }
                     else
                     {
                         _output.Stop();
                         IsPlaying = false;
+                        CurrentPlayingTrackId = null;
                     }
                 }
             }
@@ -394,15 +644,152 @@ namespace DJCMS.ViewModels
             return null;
         }
 
+        private PlaylistTrack? GetPreviousTrack()
+        {
+            if (_currentTrack == null)
+                return Tracks.FirstOrDefault();
+
+            var result = Tracks.IndexOf(_currentTrack.Track);
+            if (result > 0)
+            {
+                return Tracks[result - 1];
+            }
+
+            return null;
+        }
+
+        public void SkipForward()
+        {
+            var nextTrack = GetNextTrack();
+            if (nextTrack != null)
+            {
+                try
+                {
+                    _mixer.RemoveAllMixerInputs();
+                    _selectionID = nextTrack.ID;
+                    SelectedTrack = nextTrack;
+                    _currentTrack = new PlayingTrack(nextTrack, 0);
+                    _mixer.AddMixerInput(_currentTrack.Provider);
+                    CurrentPlayingTrackId = nextTrack.ID;
+
+                    if (IsPlaying)
+                    {
+                        try
+                        {
+                            _output?.Play();
+                        }
+                        catch
+                        {
+                            IsPlaying = false;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    IsPlaying = false;
+                    try
+                    {
+                        MessageBox.Show($"Failed to skip to track: {nextTrack.FileName}\n\nError: {ex.Message}", 
+                            "Playback Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+                    catch { }
+                }
+            }
+        }
+
+        public void SkipBackward()
+        {
+            var previousTrack = GetPreviousTrack();
+            if (previousTrack != null)
+            {
+                try
+                {
+                    _mixer.RemoveAllMixerInputs();
+                    _selectionID = previousTrack.ID;
+                    SelectedTrack = previousTrack;
+                    _currentTrack = new PlayingTrack(previousTrack, 0);
+                    _mixer.AddMixerInput(_currentTrack.Provider);
+                    CurrentPlayingTrackId = previousTrack.ID;
+
+                    if (IsPlaying)
+                    {
+                        try
+                        {
+                            _output?.Play();
+                        }
+                        catch
+                        {
+                            IsPlaying = false;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    IsPlaying = false;
+                    try
+                    {
+                        MessageBox.Show($"Failed to skip to track: {previousTrack.FileName}\n\nError: {ex.Message}", 
+                            "Playback Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+                    catch { }
+                }
+            }
+        }
+
         private void PlayTrack(PlaylistTrack track, int offset)
         {
-            _bufferTrack = new PlayingTrack(track, offset);
-            _mixer.AddMixerInput(_bufferTrack.Provider);
+            try
+            {
+                _bufferTrack = new PlayingTrack(track, offset);
+                _mixer.AddMixerInput(_bufferTrack.Provider);
+            }
+            catch
+            {
+                _bufferTrack = null;
+            }
         }
+
+        private string localAppData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DJCMS");
 
         private async void AutoLoad()
         {
+            
+            var supportedExtensions = new[] { ".mp3", ".wav", ".m4a", ".flac", ".aac", ".wma", ".ogg" };
+            var supportedPL_Extensions = new[] { ".json" };
+
+            //library
             var libraryFolderPath = @"D:\Music\DJing\717_backup";
+            var fileArray2 = Directory.GetFiles(libraryFolderPath)
+                .Where(file => supportedExtensions.Contains(Path.GetExtension(file).ToLowerInvariant()))
+                .OrderBy(file => file)
+                .ToArray();
+            LoadLibrary(fileArray2);
+
+            //tracks
+            Tracks = await LoadPlaylistFile($"{localAppData}\\playlist.json");
+
+            //playlists
+            var fileArray1 = Directory.GetFiles(localAppData)
+               .Where(file => supportedPL_Extensions.Contains(Path.GetExtension(file).ToLowerInvariant()))
+               .OrderBy(file => file)
+               .ToArray();
+            LoadPlaylistFiles(fileArray1);
+        }
+
+        private async void AutoLoad2()
+        {
+            var localAppData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DJCMS");
+
+
+            var supportedPL_Extensions = new[] { ".json" };
+            var fileArray1 = Directory.GetFiles(localAppData)
+                .Where(file => supportedPL_Extensions.Contains(Path.GetExtension(file).ToLowerInvariant()))
+                .OrderBy(file => file)
+                .ToArray();
+            LoadPlaylistFiles(fileArray1);
+
+
+            var libraryFolderPath = @"C:\Users\christian.hahn\Downloads";
 
             var supportedExtensions = new[] { ".mp3", ".wav", ".m4a", ".flac", ".aac", ".wma", ".ogg" };
             var fileArray2 = Directory.GetFiles(libraryFolderPath)
@@ -412,7 +799,16 @@ namespace DJCMS.ViewModels
 
             LoadLibrary(fileArray2);
 
-            Tracks = await LoadPlaylistFile(@"D:\Music\DJing\717\playlist.json");
+            Tracks = await LoadPlaylistFile($"{localAppData}\\playlist.json");
+        }
+
+        public void LoadPlaylistFiles(string[] files)
+        {
+            PlaylistLibrary = new ObservableCollection<PlaylistFile>();
+            foreach (var file in files)
+            {
+                PlaylistLibrary.Add(new PlaylistFile { FilePath = file });
+            }
         }
 
         public void LoadFiles(string[] files)
@@ -447,6 +843,11 @@ namespace DJCMS.ViewModels
         private PlaylistTrack? GetListTrack(Guid id)
         {
             return Tracks.FirstOrDefault(t => t.ID == id);
+        }
+
+        private PlaylistFile? GetPlaylistFromId(Guid id)
+        {
+            return PlaylistLibrary?.FirstOrDefault(t => t.ID == id);
         }
 
         private PlaylistTrack? GetLibraryTrack(Guid id)
@@ -530,7 +931,7 @@ namespace DJCMS.ViewModels
             {
                 var tracks = await LoadPlaylistFile(dialog.FileName);
 
-                if(tracks != null)
+                if(tracks != null && tracks.Any())
                     return tracks;
                 else
                     return null;
@@ -540,6 +941,14 @@ namespace DJCMS.ViewModels
                 try { MessageBox.Show($"Unable to load playlist: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error); } catch { }
                 return null;
             }
+        }
+
+        public async void LoadAPlaylistFile(string filename)
+        {
+            var tracks = await LoadPlaylistFile(filename);
+
+            if (tracks != null && tracks.Any())
+                Tracks = tracks;
         }
 
         public static async Task<ObservableCollection<PlaylistTrack>> LoadPlaylistFile(string filePath)
@@ -561,12 +970,38 @@ namespace DJCMS.ViewModels
         {
             if (close)
             {
+                // Stop timer FIRST to prevent race conditions
                 _timer.Stop();
-                _output.Stop();
-                _output.Dispose();
-                _mixer.RemoveAllMixerInputs();
-                _currentTrack?.Reader.Dispose();
-                _bufferTrack?.Reader.Dispose();
+
+                try
+                {
+                    _output.Stop();
+                }
+                catch { }
+
+                try
+                {
+                    _mixer.RemoveAllMixerInputs();
+                }
+                catch { }
+
+                try
+                {
+                    _currentTrack?.Reader.Dispose();
+                }
+                catch { }
+
+                try
+                {
+                    _bufferTrack?.Reader.Dispose();
+                }
+                catch { }
+
+                try
+                {
+                    _output.Dispose();
+                }
+                catch { }
             }
             return base.OnDeactivateAsync(close, cancellationToken);
         }

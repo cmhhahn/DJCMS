@@ -7,16 +7,20 @@
         mc:Ignorable="d"
        d:DesignHeight="400" d:DesignWidth="900"
         MinWidth="820"
-        
+
         xmlns:local="clr-namespace:DJCMS.Models"
         xmlns:cal="http://caliburnmicro.com"
-              
+        xmlns:converters="clr-namespace:DJCMS.Converters"
+        xmlns:models="clr-namespace:DJCMS10.Models"
+
         Background="Transparent"
         WindowStyle="None"
         AllowsTransparency="True"
         Title="DJCMS - DJ Content Management System">
 
     <Window.Resources>
+
+        <converters:GuidEqualityConverter x:Key="GuidEqualityConverter"/>
 
         <Color x:Key="AccentColor">#FF509bec</Color>
         <!-- DarkAccentColor: slightly darker for better contrast on selected items -->
@@ -46,6 +50,124 @@
                    Color="#EEF6FA"/>
         <SolidColorBrush x:Key="PlaylistSecondaryTextBrush"
                    Color="#99A8B2"/>
+
+        <SolidColorBrush x:Key="SpotifyBackgroundBrush" Color="#121212"/>
+        <SolidColorBrush x:Key="SpotifyPanelBrush" Color="#181818"/>
+        <SolidColorBrush x:Key="SpotifyHoverBrush" Color="#282828"/>
+        <SolidColorBrush x:Key="SpotifySelectedBrush" Color="{StaticResource AccentColor}"/>
+        <SolidColorBrush x:Key="SpotifyTextBrush" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="SpotifySecondaryTextBrush" Color="#B3B3B3"/>
+
+        <!-- tab control styles -->
+        <Style 
+               TargetType="TabItem">
+
+            <Setter Property="Foreground"
+                    Value="{StaticResource SpotifySecondaryTextBrush}" />
+
+            <Setter Property="FontSize"
+                    Value="13" />
+
+            <Setter Property="Template">
+
+                <Setter.Value>
+
+                    <ControlTemplate TargetType="TabItem">
+
+                        <Border x:Name="Border" Height="30" Width="130"
+                                Background="Transparent"
+                                CornerRadius="6"
+                                Padding="12,6"
+                                Margin="4,4,0,4">
+
+                            <TextBlock Text="{TemplateBinding Header}" />
+
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+
+                            <Trigger Property="IsMouseOver"
+                                     Value="True">
+
+                                <Setter TargetName="Border"
+                                        Property="Background"
+                                        Value="{StaticResource SpotifyHoverBrush}" />
+
+                                <Setter Property="Foreground"
+                                        Value="{StaticResource SpotifyTextBrush}" />
+
+                            </Trigger>
+
+                            <Trigger Property="IsSelected"
+                                     Value="True">
+
+                                <Setter TargetName="Border"
+                                        Property="Background"
+                                        Value="{StaticResource SpotifySelectedBrush}" />
+
+                                <Setter Property="Foreground"
+                                        Value="White" />
+
+                                <Setter Property="FontWeight"
+                                        Value="SemiBold" />
+
+                            </Trigger>
+
+                        </ControlTemplate.Triggers>
+
+                    </ControlTemplate>
+
+                </Setter.Value>
+
+            </Setter>
+
+        </Style>
+
+        <Style TargetType="TabControl">
+
+            <Setter Property="Background"
+                    Value="{StaticResource SpotifyBackgroundBrush}" />
+
+            <Setter Property="BorderThickness"
+                    Value="0" />
+
+            <Setter Property="Template">
+
+                <Setter.Value>
+
+                    <ControlTemplate TargetType="TabControl">
+
+                        <Grid>
+
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <TabPanel Grid.Row="0"
+                                      Margin="0"
+                                      IsItemsHost="True" />
+
+                            <Border Grid.Row="1"
+                                    Margin="0"
+                                    Background="{StaticResource SpotifyPanelBrush}"
+                                    CornerRadius="2">
+
+                                <ContentPresenter
+                                    ContentSource="SelectedContent"
+                                    Margin="2" />
+
+                            </Border>
+
+                        </Grid>
+
+                    </ControlTemplate>
+
+                </Setter.Value>
+
+            </Setter>
+
+        </Style>
 
         <!-- FilePath text style: turns white when its containing ListBoxItem is selected -->
         <Style x:Key="PlaylistFilePathStyle" TargetType="TextBlock">
@@ -93,11 +215,14 @@
             <Setter Property="Width"
             Value="8"/>
 
+            <Setter Property="Opacity"
+            Value="0.0"/>
+
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ScrollBar">
 
-                        <Grid Background="Transparent">
+                        <Grid x:Name="ScrollBarRoot" Background="Transparent">
 
                             <Track x:Name="PART_Track" IsDirectionReversed="True" Width="8">
 
@@ -108,7 +233,7 @@
                                 </Track.DecreaseRepeatButton>
 
                                 <Track.Thumb>
-                                    <Thumb Style="{StaticResource ModernScrollBarThumb}"/>
+                                    <Thumb x:Name="PART_Thumb" Style="{StaticResource ModernScrollBarThumb}"/>
                                 </Track.Thumb>
 
                                 <Track.IncreaseRepeatButton>
@@ -144,6 +269,36 @@
                                 Value="8"/>
                                 <Setter Property="Width"
                                 Value="Auto"/>
+                            </Trigger>
+
+                            <!-- Fade in on mouse over scrollbar -->
+                            <Trigger Property="IsMouseOver"
+                             Value="True">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                     To="1"
+                                                     Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                     To="0.00"
+                                                     Duration="0:0:0.5"
+                                                     BeginTime="0:0:0.5"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                            </Trigger>
+
+                            <!-- Fade in when thumb is being dragged -->
+                            <Trigger SourceName="PART_Thumb" Property="IsDragging"
+                             Value="True">
+                                <Setter Property="Opacity" Value="1"/>
                             </Trigger>
 
                         </ControlTemplate.Triggers>
@@ -383,72 +538,7 @@
                             </Setter>
                         </Style.Setters>
                     </Style>
-
-                    <Style x:Key="Button2" TargetType="Button">
-                        <Style.Setters>
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="Button">
-                                        <Border Background="{StaticResource ControlSurfaceBrush}"
-                            CornerRadius="4"
-                            Padding="6,2"
-                            Margin="2">
-                                            <ContentPresenter
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Content="{TemplateBinding Content}"
-                        ContentTemplate="{TemplateBinding ContentTemplate}" />
-                                        </Border>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style.Setters>
-                    </Style>
-
-                    <!-- Custom scrollbar and thumb styles scoped to these listboxes -->
-                    <Style x:Key="CustomThumbStyle" TargetType="Thumb">
-                        <Setter Property="Background" Value="{StaticResource SpotifyAccentColor}"/>
-                        <Setter Property="Width" Value="8"/>
-                        <Setter Property="Height" Value="8"/>
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="Thumb">
-                                    <Border Background="{TemplateBinding Background}" CornerRadius="4"/>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-
-                    <Style x:Key="CustomScrollBarStyle" TargetType="ScrollBar">
-                        <Setter Property="Width" Value="10"/>
-                        <Setter Property="Background" Value="Transparent"/>
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="ScrollBar">
-                                    <Grid Background="Transparent" Width="{TemplateBinding Width}">
-                                        <Track Name="PART_Track" IsDirectionReversed="True" VerticalAlignment="Stretch">
-                                            <Track.DecreaseRepeatButton>
-                                                <RepeatButton Height="10" Command="ScrollBar.PageUpCommand" Opacity="0"/>
-                                            </Track.DecreaseRepeatButton>
-                                            <Track.Thumb>
-                                                <Thumb x:Name="Thumb" Style="{StaticResource CustomThumbStyle}"/>
-                                            </Track.Thumb>
-                                            <Track.IncreaseRepeatButton>
-                                                <RepeatButton Height="10" Command="ScrollBar.PageDownCommand" Opacity="0"/>
-                                            </Track.IncreaseRepeatButton>
-                                        </Track>
-                                    </Grid>
-                                    <ControlTemplate.Triggers>
-                                        <!-- Make vertical thumb a bit taller (min height) -->
-                                        <Trigger Property="Orientation" Value="Vertical">
-                                            <Setter TargetName="Thumb" Property="MinHeight" Value="100"/>
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-
+                    
                     <Style x:Key="DarkPlaylistListBoxStyle"
                            TargetType="ListBox">
                         <Setter Property="Background"
@@ -478,7 +568,7 @@
                                 <ControlTemplate TargetType="ListBoxItem">
                                     <Grid Background="Transparent" Margin="0">
                                         <Grid Margin="2">
-                                            <Border x:Name="Border"
+                                            <Border x:Name="Border" Margin="1"
                                                     Background="{StaticResource PlaylistItemBrush}"
                                                     CornerRadius="6"
                                                     Padding="{TemplateBinding Padding}"
@@ -522,15 +612,51 @@
                                         </Trigger>
                                         <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Tag}"
                                                      Value="DragOverTop">
-                                            <Setter TargetName="DropIndicatorTop"
-                                                    Property="Opacity"
-                                                    Value="1"/>
+                                            <DataTrigger.EnterActions>
+                                                <BeginStoryboard>
+                                                    <Storyboard>
+                                                        <DoubleAnimation Storyboard.TargetName="DropIndicatorTop"
+                                                                         Storyboard.TargetProperty="Opacity"
+                                                                         To="1"
+                                                                         Duration="0:0:0.01"/>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </DataTrigger.EnterActions>
+                                            <DataTrigger.ExitActions>
+                                                <BeginStoryboard>
+                                                    <Storyboard>
+                                                        <DoubleAnimation Storyboard.TargetName="DropIndicatorTop"
+                                                                         Storyboard.TargetProperty="Opacity"
+                                                                         To="0"
+                                                                         Duration="0:0:0.15"
+                                                                         BeginTime="0:0:0.1"/>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </DataTrigger.ExitActions>
                                         </DataTrigger>
                                         <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Tag}"
                                                      Value="DragOverBottom">
-                                            <Setter TargetName="DropIndicatorBottom"
-                                                    Property="Opacity"
-                                                    Value="1"/>
+                                            <DataTrigger.EnterActions>
+                                                <BeginStoryboard>
+                                                    <Storyboard>
+                                                        <DoubleAnimation Storyboard.TargetName="DropIndicatorBottom"
+                                                                         Storyboard.TargetProperty="Opacity"
+                                                                         To="1"
+                                                                         Duration="0:0:0.1"/>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </DataTrigger.EnterActions>
+                                            <DataTrigger.ExitActions>
+                                                <BeginStoryboard>
+                                                    <Storyboard>
+                                                        <DoubleAnimation Storyboard.TargetName="DropIndicatorBottom"
+                                                                         Storyboard.TargetProperty="Opacity"
+                                                                         To="0"
+                                                                         Duration="0:0:0.15"
+                                                                         BeginTime="0:0:0.05"/>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </DataTrigger.ExitActions>
                                         </DataTrigger>
                                         <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Tag}"
                                                      Value="Dragging">
@@ -570,7 +696,7 @@
                                                 BorderThickness="0"
                                                 BorderBrush="Transparent"
                                                 Panel.ZIndex="0">
-                                                <ContentPresenter/>
+                                                <ContentPresenter />
                                             </Border>                                            
                                         </Grid>
                                     </Grid>
@@ -602,12 +728,20 @@
                     </Style>
 
                     <Geometry x:Key="PlayGeometry">
-                        M 0,0 L 0,20 L 18,10 Z
+                        M 2,1 C 2,0.5 2.3,0.2 2.7,0.4 L 17,9 C 17.6,9.3 17.6,10.7 17,11 L 2.7,19.6 C 2.3,19.8 2,19.5 2,19 Z
                     </Geometry>
 
                     <Geometry x:Key="PauseGeometry">
                         M 0,0 L 0,20 L 6,20 L 6,0 Z
     M 12,0 L 12,20 L 18,20 L 18,0 Z
+                    </Geometry>
+
+                    <Geometry x:Key="SkipForwardGeometry">
+                        M 0,0 L 0,20 L 13,10 Z M 13,0 L 13,20 L 18,20 L 18,0 Z
+                    </Geometry>
+
+                    <Geometry x:Key="SkipBackwardGeometry">
+                        M 0,0 L 0,20 L 5,20 L 5,0 Z M 5,10 L 18,0 L 18,20 Z
                     </Geometry>
 
                     <Style x:Key="PlayPauseButton" TargetType="ToggleButton">
@@ -618,11 +752,12 @@
                                         <Ellipse x:Name="ButtonBack" Fill="{StaticResource SpotifyTrackBrush}" />
                                         <Path x:Name="PlayPauseIcon" Fill="White"
                                             Data="{StaticResource PlayGeometry}"
-                                            Width="18"
-                                            Height="20"
+                                            Width="16"
+                                            Height="18"
                                             Stretch="Fill"
                                             HorizontalAlignment="Center"
-                                            VerticalAlignment="Center"/>                                       
+                                            VerticalAlignment="Center"
+                                            Margin="2,0,0,0"/>
                                     </Grid>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsChecked"  Value="True">
@@ -640,7 +775,33 @@
                         </Setter>
                     </Style>
 
-
+                    <Style x:Key="SkipButton" TargetType="Button">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <Grid x:Name="wholeButton" Opacity="0.7">
+                                        <Ellipse x:Name="ButtonBack" Fill="Transparent" />
+                                        <Path x:Name="SkipIcon" Fill="White"
+                                            Data="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}"
+                                            Width="18"
+                                            Height="20"
+                                            Stretch="Fill"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"/>
+                                    </Grid>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="wholeButton" Property="Opacity" Value="1"/>
+                                            <Setter TargetName="ButtonBack" Property="Fill" Value="{StaticResource SpotifyTrackBrush}"/>
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter TargetName="wholeButton" Property="Opacity" Value="0.9" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
 
                     <!-- Popup menu button style for the custom app-styled menu -->
                     <Style x:Key="PopupMenuButtonStyle" TargetType="Button">
@@ -775,47 +936,93 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*" MinWidth="400" />
                 </Grid.ColumnDefinitions>
+                
+                <TabControl>
+                    <TabItem Header="Library">
+                        <ListBox x:Name="Library"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             Margin="2" Grid.Column="0"
+                             ItemsSource="{Binding LibraryFolder}"
+                             SelectedItem="{Binding LibraryItem}"
+                             ItemContainerStyle="{StaticResource DarkPlaylistItemStyle2}"
+                             Style="{StaticResource DarkPlaylistListBoxStyle}">
+                            <ListBox.Resources>
+                                <ResourceDictionary>
+                                    <Style TargetType="ScrollBar" BasedOn="{StaticResource ModernScrollBar}"/>
+                                </ResourceDictionary>
+                            </ListBox.Resources>
+                            <ListBox.ItemTemplate>
+                                <DataTemplate DataType="{x:Type local:PlaylistTrack}">                            
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
+                                        <Button Content="+" Height="26" Margin="0,0,10,0" FontSize="14">
+                                            <i:Interaction.Triggers>
+                                                <i:EventTrigger EventName="Click">
+                                                    <cal:ActionMessage MethodName="AddTrack">
+                                                        <cal:Parameter Value="{Binding ID}" />
+                                                    </cal:ActionMessage>
+                                                </i:EventTrigger>
+                                            </i:Interaction.Triggers>
+                                        </Button>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding FileName}"
+                                                FontSize="14"
+                                                FontWeight="SemiBold"
+                                                Foreground="{StaticResource PlaylistTextBrush}"/>
+                                            <TextBlock Text="{Binding Duration}"
+                                                FontSize="12"
+                                                FontWeight="Normal"
+                                                Foreground="{StaticResource PlaylistTextBrush}" Opacity="0.7"/>
+                                        </StackPanel>
+                                                                   
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </TabItem>
+                    <TabItem Header="Recent Playlists">
+                        <ListBox x:Name="Playlists"  
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                 Margin="2" 
+                                 ItemsSource="{Binding PlaylistLibrary}"
+                                 SelectedItem="{Binding SelectedPlaylist}"
+                                 ItemContainerStyle="{StaticResource DarkPlaylistItemStyle2}"
+                                 Style="{StaticResource DarkPlaylistListBoxStyle}">
+                            <ListBox.Resources>
+                                <ResourceDictionary>
+                                    <Style TargetType="ScrollBar" BasedOn="{StaticResource ModernScrollBar}"/>
+                                </ResourceDictionary>
+                            </ListBox.Resources>
+                            <ListBox.ItemTemplate>
+                                <DataTemplate DataType="{x:Type models:PlaylistFile}">
+                                    <Grid Background="Transparent" HorizontalAlignment="Stretch">
+                                        <i:Interaction.Triggers>
+                                            <i:EventTrigger EventName="MouseDown">
+                                                <cal:ActionMessage MethodName="ClickyPlaylist">
+                                                    <cal:Parameter Value="{Binding ID}" />
+                                                </cal:ActionMessage>
+                                            </i:EventTrigger>
+                                        </i:Interaction.Triggers>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
+                                            <Image Source="{Binding Thumbnail}"
+                                                   Width="30"
+                                                   Height="30"
+                                                   Margin="8,4,10,4" />
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding FileName}"
+                                                           FontSize="18" VerticalAlignment="Center"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{StaticResource PlaylistTextBrush}"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
 
-                <ListBox x:Name="Library"
-                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                     Margin="10" Grid.Column="0"
-                     ItemsSource="{Binding LibraryFolder}"
-                     SelectedItem="{Binding LibraryItem}"
-                     ItemContainerStyle="{StaticResource DarkPlaylistItemStyle2}"
-                     Style="{StaticResource DarkPlaylistListBoxStyle}">
-                    <ListBox.Resources>
-                        <ResourceDictionary>
-                            <Style TargetType="ScrollBar" BasedOn="{StaticResource ModernScrollBar}"/>
-                        </ResourceDictionary>
-                    </ListBox.Resources>
-                    <ListBox.ItemTemplate>
-                        <DataTemplate DataType="{x:Type local:PlaylistTrack}">                            
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
-                                <Button Content="+" Height="26" Margin="0,0,10,0" FontSize="14">
-                                    <i:Interaction.Triggers>
-                                        <i:EventTrigger EventName="Click">
-                                            <cal:ActionMessage MethodName="AddTrack">
-                                                <cal:Parameter Value="{Binding ID}" />
-                                            </cal:ActionMessage>
-                                        </i:EventTrigger>
-                                    </i:Interaction.Triggers>
-                                </Button>
-                                <StackPanel>
-                                    <TextBlock Text="{Binding FileName}"
-                                        FontSize="14"
-                                        FontWeight="SemiBold"
-                                        Foreground="{StaticResource PlaylistTextBrush}"/>
-                                    <TextBlock Text="{Binding Duration}"
-                                        FontSize="12"
-                                        FontWeight="Normal"
-                                        Foreground="{StaticResource PlaylistTextBrush}" Opacity="0.7"/>
-                                </StackPanel>
-                                                           
-                            </StackPanel>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
+                        </ListBox>
+                    </TabItem>
+                </TabControl>
 
+                
                 <Thumb x:Name="Splitter"
                        Width="5"
                        Grid.Column="1"
@@ -841,7 +1048,7 @@
                          ScrollViewer.CanContentScroll="False"
                          ScrollViewer.VerticalScrollBarVisibility="Auto"
                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                         Margin="10" Grid.Column="2"
+                         Margin="0,10,10,10" Grid.Column="2"
                          SelectedItem="{Binding SelectedTrack}"
                          ItemContainerStyle="{StaticResource DarkPlaylistItemStyle}"
                          Style="{StaticResource DarkPlaylistListBoxStyle}"
@@ -856,87 +1063,114 @@
                     <ListBox.ItemTemplate>
 
                         <DataTemplate DataType="{x:Type local:PlaylistTrack}">
-                            <Grid Margin="4">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="300"/>
-                                </Grid.ColumnDefinitions>
+                            <Border x:Name="PlayingTrackBorder"
+                                    BorderThickness="2"
+                                    BorderBrush="Transparent"
+                                    CornerRadius="6"
+                                    Background="Transparent"
+                                    Padding="0" Margin="-4">
+                                <i:Interaction.Triggers>
+                                    <i:EventTrigger EventName="MouseDown">
+                                        <cal:ActionMessage MethodName="ClickyPlayTrack">
+                                            <cal:Parameter Value="{Binding ID}" />
+                                        </cal:ActionMessage>
+                                    </i:EventTrigger>
+                                </i:Interaction.Triggers>
 
-                                <StackPanel Orientation="Horizontal">
-                                    <Image Source="{Binding Thumbnail}"
-                                           Width="40"
-                                           Height="40"
-                                           Margin="4,0,10,0" />
-                                    <StackPanel>
-                                        <TextBlock Text="{Binding FileName}"
-                                                   FontSize="16"
-                                                   FontWeight="SemiBold"
-                                                   Foreground="{StaticResource PlaylistTextBrush}"/>
-                                        <TextBlock Text="{Binding FilePath}"
-                                                   FontSize="11"
-                                                   Style="{StaticResource PlaylistFilePathStyle}"
-                                                   TextTrimming="CharacterEllipsis"/>
+                                <Grid Margin="4">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="300"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Orientation="Horizontal">
+                                        <Image Source="{Binding Thumbnail}"
+                                               Width="40"
+                                               Height="40"
+                                               Margin="4,0,10,0" />
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding FileName}"
+                                                       FontSize="16"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{StaticResource PlaylistTextBrush}"/>
+                                            <TextBlock Text="{Binding FilePath}"
+                                                       FontSize="11"
+                                                       Style="{StaticResource PlaylistFilePathStyle}"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                        </StackPanel>
                                     </StackPanel>
-                                </StackPanel>
-                               
 
-                                <StackPanel Orientation="Horizontal"
-                                            Grid.Column="1"
-                                            HorizontalAlignment="Right"
-                                            VerticalAlignment="Center">
-                                    
-                                    <TextBlock Text="{Binding Duration}" FontSize="15"
-                                               Foreground="White"
-                                               Margin="0,0,20,0" />
 
-                                    <Button Content="   " Margin="0,0,20,0">
-                                        <i:Interaction.Triggers>
-                                            <i:EventTrigger EventName="Click">
-                                                <cal:ActionMessage MethodName="ReGenTrack">
-                                                    <cal:Parameter Value="{Binding ID}" />
-                                                </cal:ActionMessage>
-                                            </i:EventTrigger>
-                                        </i:Interaction.Triggers>
-                                    </Button>
+                                    <StackPanel Orientation="Horizontal"
+                                                Grid.Column="1"
+                                                HorizontalAlignment="Right"
+                                                VerticalAlignment="Center">
 
-                                    <Button Content="-">
-                                        <i:Interaction.Triggers>
-                                            <i:EventTrigger EventName="Click">
-                                                <cal:ActionMessage MethodName="Minus">
-                                                    <cal:Parameter Value="{Binding ID}" />
-                                                </cal:ActionMessage>
-                                            </i:EventTrigger>
-                                        </i:Interaction.Triggers>
-                                    </Button>
-                                    <Border Background="{StaticResource ControlSurfaceBrush}"
-                                            CornerRadius="4"
-                                            Padding="6,2">
-                                        <TextBlock Text="{Binding GapSeconds, StringFormat={}{0:+0.##;-0.##;0}s}"
+                                        <TextBlock Text="{Binding Duration}" FontSize="15"
                                                    Foreground="White"
-                                                   FontWeight="SemiBold"/>
-                                    </Border>
-                                    <Button Content="+">
-                                        <i:Interaction.Triggers>
-                                            <i:EventTrigger EventName="Click">
-                                                <cal:ActionMessage MethodName="Plus">
-                                                    <cal:Parameter Value="{Binding ID}" />
-                                                </cal:ActionMessage>
-                                            </i:EventTrigger>
-                                        </i:Interaction.Triggers>
-                                    </Button>
+                                                   Margin="0,0,20,0" />
 
-                                    <Button Content="⨉" Margin="20,0,4,0">
-                                        <i:Interaction.Triggers>
-                                            <i:EventTrigger EventName="Click">
-                                                <cal:ActionMessage MethodName="RemoveTrack">
-                                                    <cal:Parameter Value="{Binding ID}" />
-                                                </cal:ActionMessage>
-                                            </i:EventTrigger>
-                                        </i:Interaction.Triggers>
-                                    </Button>
-                                    
-                                </StackPanel>
-                            </Grid>
+                                        <Button Content="   " Margin="0,0,20,0">
+                                            <i:Interaction.Triggers>
+                                                <i:EventTrigger EventName="Click">
+                                                    <cal:ActionMessage MethodName="ReGenTrack">
+                                                        <cal:Parameter Value="{Binding ID}" />
+                                                    </cal:ActionMessage>
+                                                </i:EventTrigger>
+                                            </i:Interaction.Triggers>
+                                        </Button>
+
+                                        <Button Content="-">
+                                            <i:Interaction.Triggers>
+                                                <i:EventTrigger EventName="Click">
+                                                    <cal:ActionMessage MethodName="Minus">
+                                                        <cal:Parameter Value="{Binding ID}" />
+                                                    </cal:ActionMessage>
+                                                </i:EventTrigger>
+                                            </i:Interaction.Triggers>
+                                        </Button>
+                                        <Border Background="{StaticResource ControlSurfaceBrush}"
+                                                CornerRadius="4"
+                                                Padding="6,2">
+                                            <TextBlock Text="{Binding GapSeconds, StringFormat={}{0:+0.##;-0.##;0}s}"
+                                                       Foreground="White"
+                                                       FontWeight="SemiBold"/>
+                                        </Border>
+                                        <Button Content="+">
+                                            <i:Interaction.Triggers>
+                                                <i:EventTrigger EventName="Click">
+                                                    <cal:ActionMessage MethodName="Plus">
+                                                        <cal:Parameter Value="{Binding ID}" />
+                                                    </cal:ActionMessage>
+                                                </i:EventTrigger>
+                                            </i:Interaction.Triggers>
+                                        </Button>
+
+                                        <Button Content="⨉" Margin="20,0,4,0">
+                                            <i:Interaction.Triggers>
+                                                <i:EventTrigger EventName="Click">
+                                                    <cal:ActionMessage MethodName="RemoveTrack">
+                                                        <cal:Parameter Value="{Binding ID}" />
+                                                    </cal:ActionMessage>
+                                                </i:EventTrigger>
+                                            </i:Interaction.Triggers>
+                                        </Button>
+
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                            <DataTemplate.Triggers>
+                                <DataTrigger Value="True">
+                                    <DataTrigger.Binding>
+                                        <MultiBinding Converter="{StaticResource GuidEqualityConverter}">
+                                            <Binding Path="ID"/>
+                                            <Binding Path="DataContext.CurrentPlayingTrackId" RelativeSource="{RelativeSource AncestorType=ListBox}"/>
+                                        </MultiBinding>
+                                    </DataTrigger.Binding>
+                                    <Setter TargetName="PlayingTrackBorder" Property="BorderThickness" Value="2"/>
+                                    <Setter TargetName="PlayingTrackBorder" Property="BorderBrush" Value="{StaticResource SpotifyAccentColor}"/>
+                                </DataTrigger>
+                            </DataTemplate.Triggers>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
@@ -950,7 +1184,236 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                
+
+                <!-- Equalizer Button in Bottom Left -->
+                <Button x:Name="EqualizerButton"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Bottom"
+                        Grid.Column="0"
+                        Style="{StaticResource WindowControlButtonStyle}"
+                        Click="EqualizerButton_Click"
+                        Margin="10,0,0,10">
+                    <TextBlock Text="♫"
+                               FontSize="16"
+                               Opacity="0.5"/>
+                </Button>
+
+                <!-- Equalizer Popup -->
+                <Popup x:Name="EqualizerPopup"
+                       PlacementTarget="{Binding ElementName=EqualizerButton}"
+                       Placement="Top"
+                       StaysOpen="False"
+                       AllowsTransparency="True"
+                       PopupAnimation="Slide">
+                    <Border Background="{StaticResource PlaylistItemBrush}"
+                            CornerRadius="6"
+                            Padding="12"
+                            BorderBrush="{StaticResource SpotifyAccentColor}"
+                            BorderThickness="1"
+                            MinWidth="280"
+                            MinHeight="180">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Title -->
+                            <TextBlock Text="Equalizer"
+                                       FontSize="14"
+                                       FontWeight="SemiBold"
+                                       Foreground="White"
+                                       Margin="0,0,0,12"/>
+
+                            <!-- Equalizer Sliders -->
+                            <Grid Grid.Row="1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- 20 Hz -->
+                                <StackPanel Width="30" Grid.Column="0" Margin="4,0">
+                                    <Slider Orientation="Vertical"
+                                            Height="120"
+                                            Minimum="-12"
+                                            Maximum="12"
+                                            Value="{Binding Band0, Mode=TwoWay}"
+                                            TickFrequency="1"
+                                            IsSnapToTickEnabled="True"
+                                            HorizontalAlignment="Center"/>
+                                    <TextBlock Text="31Hz"
+                                               FontSize="10"
+                                               Foreground="{StaticResource PlaylistSecondaryTextBrush}"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,4,0,0"/>
+                                </StackPanel>
+
+                                <!-- 60 Hz -->
+                                <StackPanel Width="30" Grid.Column="1" Margin="4,0">
+                                    <Slider Orientation="Vertical"
+                                            Height="120"
+                                            Minimum="-12"
+                                            Maximum="12"
+                                            Value="{Binding Band1, Mode=TwoWay}"
+                                            TickFrequency="1"
+                                            IsSnapToTickEnabled="True"
+                                            HorizontalAlignment="Center"/>
+                                    <TextBlock Text="62Hz"
+                                               FontSize="10"
+                                               Foreground="{StaticResource PlaylistSecondaryTextBrush}"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,4,0,0"/>
+                                </StackPanel>
+
+                                <!-- 150 Hz -->
+                                <StackPanel Width="30" Grid.Column="2" Margin="4,0">
+                                    <Slider Orientation="Vertical"
+                                            Height="120"
+                                            Minimum="-12"
+                                            Maximum="12"
+                                            Value="{Binding Band2, Mode=TwoWay}"
+                                            TickFrequency="1"
+                                            IsSnapToTickEnabled="True"
+                                            HorizontalAlignment="Center"/>
+                                    <TextBlock Text="125Hz"
+                                               FontSize="10"
+                                               Foreground="{StaticResource PlaylistSecondaryTextBrush}"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,4,0,0"/>
+                                </StackPanel>
+
+                                <!-- 250 Hz -->
+                                <StackPanel Width="30" Grid.Column="3" Margin="4,0">
+                                    <Slider Orientation="Vertical"
+                                            Height="120"
+                                            Minimum="-12"
+                                            Maximum="12"
+                                            Value="{Binding Band3, Mode=TwoWay}"
+                                            TickFrequency="1"
+                                            IsSnapToTickEnabled="True"
+                                            HorizontalAlignment="Center"/>
+                                    <TextBlock Text="250Hz"
+                                               FontSize="10"
+                                               Foreground="{StaticResource PlaylistSecondaryTextBrush}"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,4,0,0"/>
+                                </StackPanel>
+
+                                <!-- 600 Hz -->
+                                <StackPanel Width="30" Grid.Column="4" Margin="4,0">
+                                    <Slider Orientation="Vertical"
+                                            Height="120"
+                                            Minimum="-12"
+                                            Maximum="12"
+                                            Value="{Binding Band4, Mode=TwoWay}"
+                                            TickFrequency="1"
+                                            IsSnapToTickEnabled="True"
+                                            HorizontalAlignment="Center"/>
+                                    <TextBlock Text="500Hz"
+                                               FontSize="10"
+                                               Foreground="{StaticResource PlaylistSecondaryTextBrush}"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,4,0,0"/>
+                                </StackPanel>
+
+                                <!-- 1kHz -->
+                                <StackPanel Width="30" Grid.Column="5" Margin="4,0">
+                                    <Slider Orientation="Vertical"
+                                            Height="120"
+                                            Minimum="-12"
+                                            Maximum="12"
+                                            Value="{Binding Band5, Mode=TwoWay}"
+                                            TickFrequency="1"
+                                            IsSnapToTickEnabled="True"
+                                            HorizontalAlignment="Center"/>
+                                    <TextBlock Text="1kHz"
+                                               FontSize="10"
+                                               Foreground="{StaticResource PlaylistSecondaryTextBrush}"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,4,0,0"/>
+                                </StackPanel>
+
+                                <!-- 4kHz -->
+                                <StackPanel Width="30" Grid.Column="6" Margin="4,0">
+                                    <Slider Orientation="Vertical"
+                                            Height="120"
+                                            Minimum="-12"
+                                            Maximum="12"
+                                            Value="{Binding Band6, Mode=TwoWay}"
+                                            TickFrequency="1"
+                                            IsSnapToTickEnabled="True"
+                                            HorizontalAlignment="Center"/>
+                                    <TextBlock Text="2kHz"
+                                               FontSize="10"
+                                               Foreground="{StaticResource PlaylistSecondaryTextBrush}"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,4,0,0"/>
+                                </StackPanel>
+
+                                <!-- 8kHz -->
+                                <StackPanel Width="30" Grid.Column="7" Margin="4,0">
+                                    <Slider Orientation="Vertical"
+                                            Height="120"
+                                            Minimum="-12"
+                                            Maximum="12"
+                                            Value="{Binding Band7, Mode=TwoWay}"
+                                            TickFrequency="1"
+                                            IsSnapToTickEnabled="True"
+                                            HorizontalAlignment="Center"/>
+                                    <TextBlock Text="4kHz"
+                                               FontSize="10"
+                                               Foreground="{StaticResource PlaylistSecondaryTextBrush}"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,4,0,0"/>
+                                </StackPanel>
+
+                                <!-- 16kHz -->
+                                <StackPanel Width="30" Grid.Column="8" Margin="4,0">
+                                    <Slider Orientation="Vertical"
+                                            Height="120"
+                                            Minimum="-12"
+                                            Maximum="12"
+                                            Value="{Binding Band8, Mode=TwoWay}"
+                                            TickFrequency="1"
+                                            IsSnapToTickEnabled="True"
+                                            HorizontalAlignment="Center"/>
+                                    <TextBlock Text="8kHz"
+                                               FontSize="10"
+                                               Foreground="{StaticResource PlaylistSecondaryTextBrush}"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,4,0,0"/>
+                                </StackPanel>
+
+                                <!-- 20kHz -->
+                                <StackPanel Width="30" Grid.Column="9" Margin="4,0">
+                                    <Slider Orientation="Vertical"
+                                            Height="120"
+                                            Minimum="-12"
+                                            Maximum="12"
+                                            Value="{Binding Band9, Mode=TwoWay}"
+                                            TickFrequency="1"
+                                            IsSnapToTickEnabled="True"
+                                            HorizontalAlignment="Center"/>
+                                    <TextBlock Text="16kHz"
+                                               FontSize="10"
+                                               Foreground="{StaticResource PlaylistSecondaryTextBrush}"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </Popup>
+
                 <Grid x:Name="AudioControl" Grid.Column="1">
                     <StackPanel Orientation="Horizontal"
                                 HorizontalAlignment="Center"
@@ -961,10 +1424,26 @@
                                 Width="500"
                                 Margin="20"/>
 
+                        <Button Width="40" Height="40" 
+                                x:Name="SkipBackward"
+                                Style="{StaticResource SkipButton}"
+                                Tag="{StaticResource SkipBackwardGeometry}"
+                                cal:Message.Attach="[Event Click] = [Action SkipBackward()]"
+                                BorderThickness="0"
+                                Margin="0,0,10,0"/>
+
                         <ToggleButton Width="50" Height="50" x:Name="TogglePlay" IsChecked="{Binding IsPlaying, Mode=OneWay}"
                              Style="{StaticResource PlayPauseButton}"
                             BorderThickness="0">
                         </ToggleButton>
+
+                        <Button Width="40" Height="40" 
+                                x:Name="SkipForward"
+                                Style="{StaticResource SkipButton}"
+                                Tag="{StaticResource SkipForwardGeometry}"
+                                cal:Message.Attach="[Event Click] = [Action SkipForward()]"
+                                BorderThickness="0"
+                                Margin="10,0,0,0"/>
                     </StackPanel>
                 </Grid>
 

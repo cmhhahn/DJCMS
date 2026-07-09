@@ -1,6 +1,7 @@
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using System;
+using System.IO;
 
 namespace DJCMS.Models
 {
@@ -13,7 +14,21 @@ namespace DJCMS.Models
 
         public PlayingTrack(PlaylistTrack track, int offset)
         {
-            Reader = new AudioFileReader(track.FilePath);
+            if (string.IsNullOrEmpty(track.FilePath))
+                throw new FileNotFoundException("Track file path is null or empty.", track.FilePath);
+
+            if (!File.Exists(track.FilePath))
+                throw new FileNotFoundException($"Audio file not found: {track.FilePath}", track.FilePath);
+
+            try
+            {
+                Reader = new AudioFileReader(track.FilePath);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Failed to load audio file: {track.FilePath}", ex);
+            }
+
             TrackID = track.ID;
             Track = track;
 
@@ -42,7 +57,17 @@ namespace DJCMS.Models
 
         public void Seek(TimeSpan time)
         {
-            Reader.CurrentTime = time;
+            try
+            {
+                if (time >= TimeSpan.Zero && time <= Reader.TotalTime)
+                {
+                    Reader.CurrentTime = time;
+                }
+            }
+            catch
+            {
+                // Seeking failed, ignore to prevent crash
+            }
         }
     }
 }

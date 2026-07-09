@@ -1,9 +1,20 @@
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Controls.Primitives;
 using DJCMS.Models;
 using DJCMS.ViewModels;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Forms;
+using System.Windows.Input;
+using System.Windows.Interop;
+using System.Windows.Media.Animation;
+using DJCMS10.Utilities;
+using DataFormats = System.Windows.DataFormats;
+using DragDropEffects = System.Windows.DragDropEffects;
+using DragEventArgs = System.Windows.DragEventArgs;
+using ListBox = System.Windows.Controls.ListBox;
+using MouseEventArgs = System.Windows.Input.MouseEventArgs;
+using Orientation = System.Windows.Controls.Orientation;
+using ScrollBar = System.Windows.Controls.Primitives.ScrollBar;
 
 namespace DJCMS.Views
 {
@@ -23,6 +34,87 @@ namespace DJCMS.Views
             InitializeComponent();
             SourceInitialized += MainWindowView_SourceInitialized;
             StateChanged += MainWindowView_StateChanged;
+            Loaded += MainWindowView_Loaded;
+        }
+
+        private void MainWindowView_Loaded(object sender, RoutedEventArgs e)
+        {
+            // Attach ScrollChanged event to both ListBoxes
+            AttachScrollChangedHandler(Library);
+            AttachScrollChangedHandler(Tracks);
+        }
+
+        private void AttachScrollChangedHandler(ListBox? listBox)
+        {
+            if (listBox == null) return;
+
+            // Find the ScrollViewer inside the ListBox
+            var scrollViewer = FindVisualChild<ScrollViewer>(listBox);
+            if (scrollViewer != null)
+            {
+                scrollViewer.ScrollChanged += ScrollViewer_ScrollChanged;
+            }
+        }
+
+        private void ScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
+        {
+            if (sender is ScrollViewer scrollViewer)
+            {
+                // Find the vertical scrollbar
+                var scrollBar = FindVisualChild<ScrollBar>(scrollViewer, sb => sb.Orientation == Orientation.Vertical);
+
+                if (scrollBar != null)
+                {
+                    // Animate the scrollbar opacity
+                    var storyboard = new Storyboard();
+
+                    // Fade in
+                    var fadeIn = new DoubleAnimation
+                    {
+                        To = 1.0,
+                        Duration = TimeSpan.FromSeconds(0.15)
+                    };
+                    Storyboard.SetTarget(fadeIn, scrollBar);
+                    Storyboard.SetTargetProperty(fadeIn, new PropertyPath(OpacityProperty));
+                    storyboard.Children.Add(fadeIn);
+
+                    // Fade out after delay
+                    var fadeOut = new DoubleAnimation
+                    {
+                        To = 0.00,
+                        Duration = TimeSpan.FromSeconds(0.8),
+                        BeginTime = TimeSpan.FromSeconds(1.2)
+                    };
+                    Storyboard.SetTarget(fadeOut, scrollBar);
+                    Storyboard.SetTargetProperty(fadeOut, new PropertyPath(OpacityProperty));
+                    storyboard.Children.Add(fadeOut);
+
+                    storyboard.Begin();
+                }
+            }
+        }
+
+        private static T? FindVisualChild<T>(DependencyObject parent, Func<T, bool>? predicate = null) where T : DependencyObject
+        {
+            if (parent == null) return null;
+
+            for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent); i++)
+            {
+                var child = System.Windows.Media.VisualTreeHelper.GetChild(parent, i);
+
+                if (child is T typedChild && (predicate == null || predicate(typedChild)))
+                {
+                    return typedChild;
+                }
+
+                var result = FindVisualChild<T>(child, predicate);
+                if (result != null)
+                {
+                    return result;
+                }
+            }
+
+            return null;
         }
 
         // Resize thumb handlers
@@ -118,9 +210,31 @@ namespace DJCMS.Views
 
         private void MainWindowView_SourceInitialized(object? sender, EventArgs e)
         {
-            // Ensure window respects the working area when maximized
-            MaxHeight = SystemParameters.MaximizedPrimaryScreenHeight;
-            MaxWidth = SystemParameters.MaximizedPrimaryScreenWidth;
+            MaxHeight = 1032;
+            MaxWidth = 1920;
+
+            //base.OnSourceInitialized(e);
+
+            var source = (HwndSource)PresentationSource.FromVisual(this);
+            source.AddHook(WndProc);
+        }
+
+        private IntPtr WndProc(
+            IntPtr hwnd,
+            int msg,
+            IntPtr wParam,
+            IntPtr lParam,
+            ref bool handled)
+        {
+            const int WM_GETMINMAXINFO = 0x24;
+
+            if (msg == WM_GETMINMAXINFO)
+            {
+                WindowHelpers.WmGetMinMaxInfo(hwnd, lParam);
+                handled = true;
+            }
+
+            return IntPtr.Zero;
         }
 
         private void MainWindowView_StateChanged(object? sender, EventArgs e)
@@ -136,6 +250,7 @@ namespace DJCMS.Views
                 if (Content is Border border)
                 {
                     border.BorderThickness = new Thickness(0);
+                    border.CornerRadius = new CornerRadius(0);
                     border.Padding = new Thickness(7); // Add padding to compensate for hidden border
                 }
             }
@@ -145,6 +260,7 @@ namespace DJCMS.Views
                 if (Content is Border border)
                 {
                     border.BorderThickness = new Thickness(1);
+                    border.CornerRadius = new CornerRadius(4);
                     border.Padding = new Thickness(0);
                 }
             }
@@ -164,10 +280,37 @@ namespace DJCMS.Views
                 ExitFullScreen();
             }
 
+            GetMaximizedSizeLimits();
+            
+
             WindowState = WindowState == WindowState.Maximized
                 ? WindowState.Normal
                 : WindowState.Maximized;
         }
+
+        private void GetMaximizedSizeLimits()
+        {
+            //Rect size = GetCurrentMonitorWorkingArea();
+            //MaxHeight = size.Height - 40;
+            //MaxWidth = size.Width;
+        }
+
+        /*
+        private Rect GetCurrentMonitorWorkingArea()
+        {
+            var hwnd = new WindowInteropHelper(this).Handle;
+
+            Screen screen = Screen.FromHandle(hwnd);
+
+            var workingArea = screen.WorkingArea;
+
+            return new Rect(
+                workingArea.Left,
+                workingArea.Top,
+                workingArea.Width,
+                workingArea.Height);
+        }
+        */
 
         private void FullScreenButton_Click(object sender, RoutedEventArgs e)
         {
@@ -187,6 +330,15 @@ namespace DJCMS.Views
             if (MenuPopup != null)
             {
                 MenuPopup.IsOpen = !MenuPopup.IsOpen;
+            }
+        }
+
+        private void EqualizerButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Toggle the equalizer popup
+            if (EqualizerPopup != null)
+            {
+                EqualizerPopup.IsOpen = !EqualizerPopup.IsOpen;
             }
         }
 
@@ -240,7 +392,17 @@ namespace DJCMS.Views
             }
             else
             {
-                DragMove();
+                try
+                {
+                    if (e.ChangedButton == MouseButton.Left)
+                    {
+                        DragMove();
+                    }
+                }
+                catch (InvalidOperationException)
+                {
+                    // DragMove failed (window state changed during drag), ignore
+                }
             }
         }
 
@@ -406,6 +568,13 @@ namespace DJCMS.Views
             {
                 // Insert at the position of the target item
                 int targetIndex = vm.Tracks.IndexOf(dropTargetTrack);
+                if (targetIndex < 0)
+                {
+                    // Track not found, add to end
+                    vm.LoadFiles(files);
+                    return;
+                }
+
                 if (!_dropAfter)
                 {
                     // Drop before the target
@@ -458,21 +627,31 @@ namespace DJCMS.Views
                 // If in full-screen, exit and continue dragging
                 if (_isFullScreen || WindowState == WindowState.Maximized)
                 {
-                    // Store the mouse position relative to the screen before exiting full-screen
-                    Point mouseScreenPos = PointToScreen(e.GetPosition(this));
+                    try
+                    {
+                        // Store the mouse position relative to the screen before exiting full-screen
+                        Point mouseScreenPos = PointToScreen(e.GetPosition(this));
 
-                    MaximizeButton_Click(null, null);
+                        MaximizeButton_Click(null, null);
 
-                    // Calculate the new window position so the mouse stays under the title bar
-                    // Center the window under the cursor
-                    double newLeft = mouseScreenPos.X - (Width / 2);
-                    double newTop = mouseScreenPos.Y - 20; // Approximate title bar height
+                        // Calculate the new window position so the mouse stays under the title bar
+                        // Center the window under the cursor
+                        double newLeft = mouseScreenPos.X - (Width / 2);
+                        double newTop = mouseScreenPos.Y - 20; // Approximate title bar height
 
-                    // Update window position
-                    Left = newLeft;
-                    Top = newTop;
+                        // Update window position
+                        Left = newLeft;
+                        Top = newTop;
 
-                    DragMove();
+                        if (e.LeftButton == MouseButtonState.Pressed)
+                        {
+                            DragMove();
+                        }
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        // DragMove failed, ignore
+                    }
                 }
             }
         }
