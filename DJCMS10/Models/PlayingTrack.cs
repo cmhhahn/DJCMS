@@ -15,7 +15,7 @@ namespace DJCMS.Models
         public bool fadingIn = false;
         public bool fadingOut = false;
 
-        public PlayingTrack(PlaylistTrack track, int offset)
+        private PlayingTrack(PlaylistTrack track, int offset)
         {
             if (string.IsNullOrEmpty(track.FilePath))
                 throw new FileNotFoundException("Track file path is null or empty.", track.FilePath);
@@ -53,6 +53,12 @@ namespace DJCMS.Models
             };
 
             Provider = provider;
+        }
+
+        // Create PlayingTrack off the UI thread to avoid blocking the UI when opening files / resampling
+        public static Task<PlayingTrack> CreateAsync(PlaylistTrack track, int offset)
+        {
+            return Task.Run(() => new PlayingTrack(track, offset));
         }
 
         public TimeSpan TotalTime => Reader.TotalTime;

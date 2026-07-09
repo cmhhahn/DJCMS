@@ -1158,12 +1158,12 @@
                                             </i:Interaction.Triggers>
                                         </Button>
 
-                                        <ToggleButton x:Name="CrossFadeToggle" Margin="4" Style="{StaticResource CrossFadeToggleStyle}"
+                                        <ToggleButton x:Name="CrossFadeToggle" Margin="4,0,4,0" Style="{StaticResource CrossFadeToggleStyle}"
                                                       IsChecked="{Binding FadeInOnCross, Mode=TwoWay}">
                                             <TextBlock Text="FADE" />
                                         </ToggleButton>
 
-                                        <Button Content="-" Margin="3">
+                                        <Button Content="-" Margin="3,0,3,0">
                                             <i:Interaction.Triggers>
                                                 <i:EventTrigger EventName="Click">
                                                     <cal:ActionMessage MethodName="Minus">
@@ -1180,7 +1180,7 @@
                                                        Foreground="White"
                                                        FontWeight="SemiBold"/>
                                         </Border>
-                                        <Button Content="+" Margin="3">
+                                        <Button Content="+" Margin="3,0,3,0">
                                             <i:Interaction.Triggers>
                                                 <i:EventTrigger EventName="Click">
                                                     <cal:ActionMessage MethodName="Plus">
