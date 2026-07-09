@@ -698,7 +698,7 @@ namespace DJCMS.ViewModels
 
                                     Task.Run(() =>
                                     {
-                                        Thread.Sleep((int)(((double)_currentTrack.Track.GapSeconds + 0.5) * 1000.0)); // Wait for 1 second to ensure the track has started playing
+                                        Thread.Sleep((int)(((double)old.Track.GapSeconds + 0.5) * 1000.0)); // Wait for 1 second to ensure the track has started playing
                                         Buffering = false;
                                     });
                                     try { old.Reader.Dispose(); } catch { }
