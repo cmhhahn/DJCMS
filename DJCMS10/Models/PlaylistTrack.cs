@@ -69,6 +69,9 @@ namespace DJCMS.Models
         }
 
         [JsonIgnore]
+        public int TotalSeconds { get; set; }
+
+        [JsonIgnore]
         public string Duration
         {
             get
@@ -86,6 +89,7 @@ namespace DJCMS.Models
 
                     using var reader = new NAudio.Wave.AudioFileReader(FilePath);
                     var totalSeconds = (int)reader.TotalTime.TotalSeconds;
+                    TotalSeconds = totalSeconds;
                     var minutes = totalSeconds / 60;
                     var seconds = totalSeconds % 60;
                     _cachedDuration = $"{minutes}:{seconds:D2}";

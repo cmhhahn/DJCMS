@@ -30,7 +30,7 @@
         <Color x:Key="GradientStop2">#222324</Color>
 
         <!-- Accent color: moved from CornflowerBlue to a cooler cyan-ice tone -->
-          <SolidColorBrush x:Key="SpotifyAccentColor" Color="{StaticResource AccentColor}"/>
+        <SolidColorBrush x:Key="SpotifyAccentColor" Color="{StaticResource AccentColor}"/>
         <!-- Track/grey tones: given a very subtle cool-blue tint to unify with the accent -->
         <SolidColorBrush x:Key="SpotifyTrackBrush"
                             Color="#4A5258"/>
@@ -40,8 +40,16 @@
 
         <SolidColorBrush x:Key="PlaylistBackgroundBrush"
                    Color="#111213"/>
-        <SolidColorBrush x:Key="PlaylistItemBrush"
+
+
+        <LinearGradientBrush x:Key="PlaylistItemBrush" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#FF26282A" Offset="0"/>
+            <GradientStop Color="#8826282A" Offset="1"/>
+        </LinearGradientBrush>
+
+        <SolidColorBrush x:Key="PlaylistItemBrushX"
                    Color="#26282A"/>
+
         <SolidColorBrush x:Key="PlaylistHoverBrush"
                    Color="#31363E"/>
         <SolidColorBrush x:Key="PlaylistSelectedBrush"
@@ -318,7 +326,7 @@
             <Grid.Resources>
                 <ResourceDictionary>
 
-                  
+
                     <!-- Window Control Button Style -->
                     <Style x:Key="WindowControlButtonStyle"
                            TargetType="Button">
@@ -452,7 +460,7 @@
                         </Setter>
                     </Style>
 
-                  
+
                     <Style x:Key="SpotifySliderStyle"
                            TargetType="Slider">
                         <Setter Property="Height"
@@ -525,7 +533,7 @@
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="Button">
-                                <Border Background="{StaticResource ControlSurfaceBrush}"
+                                        <Border Background="{StaticResource ControlSurfaceBrush}"
                                                 CornerRadius="4"
                                                 Padding="6,2"
                                                 Margin="2">
@@ -576,7 +584,7 @@
                             </Setter.Value>
                         </Setter>
                     </Style>
-                    
+
                     <Style x:Key="DarkPlaylistListBoxStyle"
                            TargetType="ListBox">
                         <Setter Property="Background"
@@ -588,7 +596,7 @@
                         <Setter Property="Padding"
                                 Value="6"/>
                         <!-- Scope the custom scrollbar to controls using this ListBox style -->
-                        
+
                     </Style>
 
                     <Style x:Key="DarkPlaylistItemStyle"
@@ -735,7 +743,7 @@
                                                 BorderBrush="Transparent"
                                                 Panel.ZIndex="0">
                                                 <ContentPresenter />
-                                            </Border>                                            
+                                            </Border>
                                         </Grid>
                                     </Grid>
                                     <ControlTemplate.Triggers>
@@ -750,7 +758,7 @@
                                             <Setter TargetName="Border"
                                 Property="Background"
                                 Value="{StaticResource PlaylistSelectedBrush}"/>
-                                        </Trigger>                                       
+                                        </Trigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
                             </Setter.Value>
@@ -758,7 +766,7 @@
                         <EventSetter Event="PreviewMouseLeftButtonDown"
                  Handler="ListBoxItem_PreviewMouseLeftButtonDown"/>
                         <EventSetter Event="PreviewMouseMove"
-                 Handler="ListBoxItem_PreviewMouseMove"/>                        
+                 Handler="ListBoxItem_PreviewMouseMove"/>
                         <EventSetter Event="DragOver"
                  Handler="ListBoxItem_DragOver"/>
                         <EventSetter Event="DragLeave"
@@ -805,7 +813,7 @@
                                             <Setter TargetName="ButtonBack" Property="Fill" Value="{StaticResource SpotifyAccentColor}"/>
                                         </Trigger>
                                         <Trigger Property="IsPressed" Value="True">
-                                            <Setter TargetName="wholeButton" Property="Opacity" Value="0.9" />                                            
+                                            <Setter TargetName="wholeButton" Property="Opacity" Value="0.9" />
                                         </Trigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
@@ -876,7 +884,7 @@
                 <RowDefinition/>
                 <RowDefinition Height="70"/>
             </Grid.RowDefinitions>
-           
+
             <!-- Custom Title Bar -->
             <Grid x:Name="TitleBarGrid">
                 <Grid.Background>
@@ -974,7 +982,7 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*" MinWidth="400" />
                 </Grid.ColumnDefinitions>
-                
+
                 <TabControl>
                     <TabItem Header="Library">
                         <ListBox x:Name="Library"
@@ -990,7 +998,7 @@
                                 </ResourceDictionary>
                             </ListBox.Resources>
                             <ListBox.ItemTemplate>
-                                <DataTemplate DataType="{x:Type local:PlaylistTrack}">                            
+                                <DataTemplate DataType="{x:Type local:PlaylistTrack}">
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
                                         <Button Content="+" Height="26" Margin="0,0,10,0" FontSize="14">
                                             <i:Interaction.Triggers>
@@ -1011,7 +1019,7 @@
                                                 FontWeight="Normal"
                                                 Foreground="{StaticResource PlaylistTextBrush}" Opacity="0.7"/>
                                         </StackPanel>
-                                                                   
+
                                     </StackPanel>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
@@ -1060,7 +1068,7 @@
                     </TabItem>
                 </TabControl>
 
-                
+
                 <Thumb x:Name="Splitter"
                        Width="5"
                        Grid.Column="1"
@@ -1466,7 +1474,7 @@
                         <TextBlock Width="50" Text="{Binding CurrentTime}" Foreground="Gray"  FontWeight="SemiBold" FontSize="14"
                                    HorizontalAlignment="Center" 
                                    VerticalAlignment="Center" TextAlignment="Center" />
-                        
+
                         <Slider Style="{StaticResource SpotifySliderStyle}"
                                 Maximum="1.0"
                                 Value="{Binding TrackProgress, Mode=TwoWay}"
@@ -1501,13 +1509,21 @@
                 </Grid>
 
                 <Grid x:Name="RightControls" Grid.Column="3">
+
+                    <TextBlock MinWidth="50" Foreground="White" Text="{Binding PlaylistTime}"
+                               FontSize="14" TextAlignment="Right"
+                               Margin="0,16,58,0"
+                               HorizontalAlignment="Right"
+                               VerticalAlignment="Top"
+                               Opacity="1" />
+
                     <Button x:Name="FullScreenButton"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Bottom"
                         Grid.Row="2"
                         Style="{StaticResource WindowControlButtonStyle}"
                         Click="FullScreenButton_Click">
-                                        <TextBlock Text="⛶"
+                        <TextBlock Text="⛶"
                                FontSize="14"
                                Margin="0,-5,0,0"
                                Opacity="0.5"/>
@@ -1524,7 +1540,7 @@
                             Margin="0,0,56,10"/>
                 </Grid>
             </Grid>
-            
+
 
 
 

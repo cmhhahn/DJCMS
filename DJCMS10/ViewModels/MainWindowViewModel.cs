@@ -153,6 +153,7 @@ namespace DJCMS.ViewModels
             {
                 _tracks = value;
                 NotifyOfPropertyChange();
+                NotifyOfChangeAsyncDelay(nameof(PlaylistTime));
             }
         }
 
@@ -469,20 +470,31 @@ namespace DJCMS.ViewModels
 
         public void FadeAllMixerTracksOut()
         {
-            foreach (var input in _mixerX.MixerInputs.ToList())
+            if (IsPlaying)
             {
-                EventHandler metho = null;
-                (input as FadeSampleProvider)?.FadeOutCompleted += metho = (s, e) =>
+                foreach (var input in _mixerX.MixerInputs.ToList())
                 {
-                    try
+                    EventHandler metho = null;
+                    (input as FadeSampleProvider)?.FadeOutCompleted += metho = (s, e) =>
                     {
-                        _mixerX.RemoveMixerInput(input);
-                        (input as FadeSampleProvider)?.Dispose();
-                        (input as FadeSampleProvider)?.FadeOutCompleted -= metho;
-                    }
-                    catch { }
-                };
-                (input as FadeSampleProvider)?.BeginFadeOut(TimeSpan.FromMilliseconds(200)); // Fade out over 200ms
+                        try
+                        {
+                            _mixerX.RemoveMixerInput(input);
+                            (input as FadeSampleProvider)?.Dispose();
+                            (input as FadeSampleProvider)?.FadeOutCompleted -= metho;
+                        }
+                        catch { }
+                    };
+                    (input as FadeSampleProvider)?.BeginFadeOut(TimeSpan.FromMilliseconds(200)); // Fade out over 200ms
+                }
+            }
+            else
+            {
+                foreach (var input in _mixerX.MixerInputs.ToList())
+                {
+                    _mixerX.RemoveMixerInput(input);
+                    (input as FadeSampleProvider)?.Dispose();
+                }
             }
         }
 
@@ -527,6 +539,7 @@ namespace DJCMS.ViewModels
             if (track != null)
             {
                 Tracks.Add(track);
+                NotifyOfChangeAsyncDelay(nameof(PlaylistTime));
             }
         }
 
@@ -536,6 +549,7 @@ namespace DJCMS.ViewModels
             if (track != null)
             {
                 track.GapSeconds--;
+                NotifyOfChangeAsyncDelay(nameof(PlaylistTime));
             }
         }
 
@@ -545,6 +559,7 @@ namespace DJCMS.ViewModels
             if (track != null)
             {
                 track.GapSeconds++;
+                NotifyOfChangeAsyncDelay(nameof(PlaylistTime));
             }
         }
 
@@ -563,6 +578,7 @@ namespace DJCMS.ViewModels
             if (track != null)
             {
                 Tracks.Remove(track);
+                NotifyOfChangeAsyncDelay(nameof(PlaylistTime));
             }
         }
 
@@ -924,6 +940,8 @@ namespace DJCMS.ViewModels
                .OrderBy(file => file)
                .ToArray();
             LoadPlaylistFiles(fileArray1);
+
+            NotifyOfChangeAsyncDelay(nameof(PlaylistTime));
         }
 
         private async void AutoLoad2()
@@ -950,6 +968,8 @@ namespace DJCMS.ViewModels
             LoadLibrary(fileArray2);
 
             Tracks = await LoadPlaylistFile($"{localAppData}\\playlist.json");
+
+            NotifyOfChangeAsyncDelay(nameof(PlaylistTime));
         }
 
         public void LoadPlaylistFiles(string[] files)
@@ -967,6 +987,8 @@ namespace DJCMS.ViewModels
             {
                 Tracks.Add(new PlaylistTrack { FilePath = file, GapSeconds = 0 });
             }
+
+            NotifyOfChangeAsyncDelay(nameof(PlaylistTime));
         }
 
         public void LoadLibrary(string[] files)
@@ -988,6 +1010,8 @@ namespace DJCMS.ViewModels
                 Tracks.Insert(index, new PlaylistTrack { FilePath = file, GapSeconds = 0 });
                 index++;
             }
+
+            NotifyOfChangeAsyncDelay(nameof(PlaylistTime));
         }
 
         private PlaylistTrack? GetListTrack(Guid id)
@@ -1038,6 +1062,8 @@ namespace DJCMS.ViewModels
             {
                 try { MessageBox.Show($"Failed to load playlist: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error); } catch { }
             }
+
+            NotifyOfChangeAsyncDelay(nameof(PlaylistTime));
         }
 
         public static async Task SavePlaylistAsync(
@@ -1160,6 +1186,23 @@ namespace DJCMS.ViewModels
                 catch { }
             }
             return base.OnDeactivateAsync(close, cancellationToken);
+        }
+
+        public async void NotifyOfChangeAsyncDelay(string propertyName)
+        {
+            await Task.Delay(500);
+            NotifyOfPropertyChange(propertyName);
+        }
+
+        public string PlaylistTime
+        {
+            get
+            {
+                var totalSeconds = Tracks.Sum(t => t.TotalSeconds + t.GapSeconds);
+                var minutes = totalSeconds / 60;
+                var seconds = totalSeconds % 60;
+                return $"{minutes}:{seconds:D2}";
+            }
         }
     }
 }
