@@ -243,7 +243,25 @@ namespace DJCMS.Views
         {
             // Don't adjust border when in full-screen mode
             if (_isFullScreen)
+            {
+                if (WindowState == WindowState.Maximized)
+                {
+                    // Find the border element and adjust
+                    if (Content is Border border)
+                    {
+                        border.BorderThickness = new Thickness(0);
+                        border.CornerRadius = new CornerRadius(0);
+                        WondowGrid.Margin = new Thickness(5); // Add padding to compensate for hidden border
+
+                        TitleBarGrid.Margin = new Thickness(-5, -5, -5, 0);
+                        TitleBarGrid.Padding = new Thickness(5, 3, 5, 3);
+
+                        SizyGrid.Visibility = Visibility.Collapsed;
+                    }
+                }
+
                 return;
+            }
 
             // Remove the border thickness when maximized to prevent gaps
             if (WindowState == WindowState.Maximized)
@@ -253,7 +271,12 @@ namespace DJCMS.Views
                 {
                     border.BorderThickness = new Thickness(0);
                     border.CornerRadius = new CornerRadius(0);
-                    border.Padding = new Thickness(7); // Add padding to compensate for hidden border
+                    WondowGrid.Margin = new Thickness(5); // Add padding to compensate for hidden border
+
+                    TitleBarGrid.Margin = new Thickness(-5, -5, -5, 0);
+                    TitleBarGrid.Padding = new Thickness(5, 3, 5, 3);
+
+                    SizyGrid.Visibility = Visibility.Collapsed;
                 }
             }
             else
@@ -263,7 +286,12 @@ namespace DJCMS.Views
                 {
                     border.BorderThickness = new Thickness(1);
                     border.CornerRadius = new CornerRadius(4);
-                    border.Padding = new Thickness(0);
+                    WondowGrid.Margin = new Thickness(0);
+
+                    TitleBarGrid.Margin = new Thickness(0);
+                    TitleBarGrid.Padding = new Thickness(0);
+
+                    SizyGrid.Visibility = Visibility.Visible;
                 }
             }
         }

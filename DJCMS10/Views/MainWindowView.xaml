@@ -322,7 +322,7 @@
             BorderThickness="1"
             Background="{StaticResource PlaylistBackgroundBrush}"
             CornerRadius="4">
-        <Grid>
+        <Grid x:Name="WondowGrid" ClipToBounds="False">
             <Grid.Resources>
                 <ResourceDictionary>
 
@@ -886,94 +886,95 @@
             </Grid.RowDefinitions>
 
             <!-- Custom Title Bar -->
-            <Grid x:Name="TitleBarGrid">
-                <Grid.Background>
+
+            <Border x:Name="TitleBarGrid">
+                <Border.Background>
                     <LinearGradientBrush StartPoint="0,0"
-                                         EndPoint="0,1">
+                         EndPoint="0,1">
                         <GradientStop Color="{StaticResource GradientStop1}"
-                                      Offset="0"/>
+                      Offset="0"/>
                         <GradientStop Color="{StaticResource GradientStop2}"
-                                      Offset="1"/>
+                      Offset="1"/>
                     </LinearGradientBrush>
-                </Grid.Background>
-
-
-                <TextBlock Text="DJCMS - DJ Content Management System"
-                           Foreground="White"
-                           VerticalAlignment="Center"
-                           HorizontalAlignment="Center"
-                           FontSize="14"
-                           FontWeight="SemiBold"/>
-
-                <Grid Background="Transparent"
-                      Grid.Row="0"
-                      MouseLeftButtonDown="TitleBar_MouseLeftButtonDown"
-                      PreviewMouseMove="UIElement_OnPreviewMouseMove"
-                      Margin="0,0,116,0"/>
-
-                <!-- Top-left menu button (opens a small dropdown) -->
-                <Button x:Name="MenuButton"
-                        Style="{StaticResource WindowControlButtonStyle}"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Center"
-                        Margin="4,4,0,0"
-                        Click="MenuButton_Click">
-                    <TextBlock Text="☰"
+                </Border.Background>
+                <Grid>
+                    <TextBlock Text="DJCMS - DJ Content Management System"
+                               Foreground="White"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Center"
                                FontSize="14"
-                               Opacity="0.9"/>
-                </Button>
+                               FontWeight="SemiBold"/>
 
-                <!-- App-styled popup menu that replaces the system context menu -->
-                <Popup x:Name="MenuPopup"
-                       PlacementTarget="{Binding ElementName=MenuButton}"
-                       Placement="Bottom"
-                       StaysOpen="False"
-                       AllowsTransparency="True"
-                       PopupAnimation="Slide"
-                       DataContext="{Binding DataContext, ElementName=MenuButton}">
-                    <Border Background="{StaticResource PlaylistItemBrush}"
-                            CornerRadius="6"
-                            Padding="4"
-                            BorderBrush="{StaticResource SpotifyAccentColor}"
-                            BorderThickness="1">
-                        <StackPanel>
-                            <Button Style="{StaticResource PopupMenuButtonStyle}"
-                                    cal:Message.Attach="[Event Click] = [Action SavePlaylist()]">
-                                Save Playlist
-                            </Button>
-                            <Button Style="{StaticResource PopupMenuButtonStyle}"
-                                    cal:Message.Attach="[Event Click] = [Action LoadPlaylist()]">
-                                Load Playlist
-                            </Button>
-                        </StackPanel>
-                    </Border>
-                </Popup>
+                    <Grid Background="Transparent"
+                          Grid.Row="0"
+                          MouseLeftButtonDown="TitleBar_MouseLeftButtonDown"
+                          PreviewMouseMove="UIElement_OnPreviewMouseMove"
+                          Margin="0,0,116,0"/>
 
-                <StackPanel Orientation="Horizontal"
-                            HorizontalAlignment="Right"
-                            VerticalAlignment="Center"
-                            Margin="4,4">
-                    <Button Style="{StaticResource WindowControlButtonStyle}"
-                            Click="MinimizeButton_Click">
-                        <TextBlock Text="─"
-                                   FontSize="16"
-                                   Margin="0,2,0,0"/>
-                    </Button>
-                    <Button x:Name="MaximizeButton"
+                    <!-- Top-left menu button (opens a small dropdown) -->
+                    <Button x:Name="MenuButton"
                             Style="{StaticResource WindowControlButtonStyle}"
-                            Click="MaximizeButton_Click">
-                        <TextBlock Text="□"
-                                   FontSize="20"
-                                   Margin="0,-5,0,0"/>
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            Margin="4,4,0,0"
+                            Click="MenuButton_Click">
+                        <TextBlock Text="☰"
+                                   FontSize="14"
+                                   Opacity="0.9"/>
                     </Button>
-                    <Button Style="{StaticResource WindowControlButtonStyle}"
-                            Click="CloseButton_Click">
-                        <TextBlock Text="✕"
-                                   FontSize="13"/>
-                    </Button>
-                </StackPanel>
-            </Grid>
 
+                    <!-- App-styled popup menu that replaces the system context menu -->
+                    <Popup x:Name="MenuPopup"
+                           PlacementTarget="{Binding ElementName=MenuButton}"
+                           Placement="Bottom"
+                           StaysOpen="False"
+                           AllowsTransparency="True"
+                           PopupAnimation="Slide"
+                           DataContext="{Binding DataContext, ElementName=MenuButton}">
+                        <Border Background="{StaticResource PlaylistItemBrush}"
+                                CornerRadius="6"
+                                Padding="4"
+                                BorderBrush="{StaticResource SpotifyAccentColor}"
+                                BorderThickness="1">
+                            <StackPanel>
+                                <Button Style="{StaticResource PopupMenuButtonStyle}"
+                                        cal:Message.Attach="[Event Click] = [Action SavePlaylist()]">
+                                    Save Playlist
+                                </Button>
+                                <Button Style="{StaticResource PopupMenuButtonStyle}"
+                                        cal:Message.Attach="[Event Click] = [Action LoadPlaylist()]">
+                                    Load Playlist
+                                </Button>
+                            </StackPanel>
+                        </Border>
+                    </Popup>
+
+                    <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                Margin="4,4">
+                        <Button Style="{StaticResource WindowControlButtonStyle}"
+                                Click="MinimizeButton_Click">
+                            <TextBlock Text="─"
+                                       FontSize="16"
+                                       Margin="0,2,0,0"/>
+                        </Button>
+                        <Button x:Name="MaximizeButton"
+                                Style="{StaticResource WindowControlButtonStyle}"
+                                Click="MaximizeButton_Click">
+                            <TextBlock Text="□"
+                                       FontSize="20"
+                                       Margin="0,-5,0,0"/>
+                        </Button>
+                        <Button Style="{StaticResource WindowControlButtonStyle}"
+                                Click="CloseButton_Click">
+                            <TextBlock Text="✕"
+                                       FontSize="13"/>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+            
             <!-- playlist and library -->
             <Grid x:Name="MainArea" Grid.Row="1">
 
@@ -1545,7 +1546,7 @@
 
 
             <!-- Resize thumbs: edges and corners -->
-            <Grid IsHitTestVisible="True" Opacity="0.0" Grid.RowSpan="3" Margin="-5">
+            <Grid x:Name="SizyGrid" IsHitTestVisible="True" Opacity="0.0" Grid.RowSpan="3" Margin="-5">
                 <!-- Edges -->
                 <Thumb x:Name="ResizeLeft" Width="8" HorizontalAlignment="Left" Cursor="SizeWE" Background="Transparent" DragDelta="ResizeLeft_DragDelta"/>
                 <Thumb x:Name="ResizeRight" Width="8" HorizontalAlignment="Right" Cursor="SizeWE" Background="Transparent" DragDelta="ResizeRight_DragDelta"/>

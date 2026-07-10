@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 using DJCMS.ViewModels;
+using Serilog;
 
 namespace DJCMS
 {
@@ -21,6 +22,16 @@ namespace DJCMS
 
             _container.Singleton<IWindowManager, WindowManager>();
             _container.Singleton<IEventAggregator, EventAggregator>();
+
+            // Configure Serilog
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .WriteTo.Console()
+                .WriteTo.File("logs\\DJCMS-log-.txt", rollingInterval: RollingInterval.Day)
+                .CreateLogger();
+
+            // Register the Serilog logger instance in the container so it can be injected
+            _container.Instance<Serilog.ILogger>(Log.Logger);
 
             _container.PerRequest<MainWindowViewModel>();
         }

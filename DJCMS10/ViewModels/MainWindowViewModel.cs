@@ -9,11 +9,14 @@ using System.IO;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Threading;
+using Serilog;
 
 namespace DJCMS.ViewModels
 {
     public class MainWindowViewModel : Screen
     {
+        private readonly IEventAggregator _eventAggregator;
+        private readonly ILogger _logger;
         private readonly DispatcherTimer _timer;
         private readonly MixingSampleProvider _mixerX;
         private readonly EqualizerSampleProvider _equalizer;
@@ -65,9 +68,14 @@ namespace DJCMS.ViewModels
             }
         }
 
-        public MainWindowViewModel()
+        public MainWindowViewModel(ILogger logger, IEventAggregator eventAggregator)
         {
+            _logger = logger?.ForContext<MainWindowViewModel>() ?? Log.Logger.ForContext<MainWindowViewModel>();
+            _logger.Information("MainWindowViewModel starting up");
+            _eventAggregator = eventAggregator;
+
             Tracks = new ObservableCollection<PlaylistTrack>();
+
             // Ensure library collection is initialized to avoid null refs
             LibraryFolder = new ObservableCollection<PlaylistTrack>();
 
@@ -114,6 +122,7 @@ namespace DJCMS.ViewModels
             _timer.Start();
 
             AutoLoad();
+            _logger.Information("MainWindowViewModel initialized");
         }
 
         private ObservableCollection<PlaylistFile> _playlistLibrary;
