@@ -672,9 +672,6 @@ namespace DJCMS.ViewModels
                 {
                     try
                     {
-                        _currentTrack.Dispose();
-                        _logger.Debug($"Mixer input auto-removed F {_currentTrack.TrackID}.  count: {_mixerX.MixerInputs.Count()}");
-
                         // make buffer audible and swap
                         //_bufferTrack.Reader.Volume = 1.0f;
                         var old = _currentTrack;
@@ -686,7 +683,10 @@ namespace DJCMS.ViewModels
                         _bufferTrack = null;
 
                         // dispose previous reader if it's no longer used
-                        try { old.Reader.Dispose(); } catch { }
+                        try { 
+                            old.Dispose();
+                            _logger.Debug($"Mixer input auto-removed F {_currentTrack.TrackID}.  count: {_mixerX.MixerInputs.Count()}");
+                        } catch { }
                     }
                     catch
                     {
@@ -714,9 +714,6 @@ namespace DJCMS.ViewModels
                     {
                         try
                         {
-                            _currentTrack.Dispose();
-                            _logger.Debug($"Mixer input auto-removed 0 {_currentTrack.TrackID}.  count: {_mixerX.MixerInputs.Count()}");
-
                             Buffering = true;
                             await PrepareBufferTrackAsync(nextTrack, _currentTrack.Track.GapSeconds);
 
@@ -737,7 +734,10 @@ namespace DJCMS.ViewModels
                                         Thread.Sleep((int)(((double)old.Track.GapSeconds + 0.5) * 1000.0)); // Wait for 1 second to ensure the track has started playing
                                         Buffering = false;
                                     });
-                                    try { old.Reader.Dispose(); } catch { }
+                                    try { 
+                                        old.Dispose();
+                                        _logger.Debug($"Mixer input auto-removed 0 {_currentTrack.TrackID}.  count: {_mixerX.MixerInputs.Count()}");
+                                    } catch { }
                                 }
                                 catch
                                 {
@@ -802,7 +802,7 @@ namespace DJCMS.ViewModels
                                 _currentTrack.fadingOut = false;
                                 if (_bufferTrack != null)
                                 {
-                                    try { _bufferTrack.Reader.Dispose(); } catch { }
+                                    try { _bufferTrack.Dispose(); } catch { }
                                     _bufferTrack = null;
                                 }
                             }
@@ -1072,8 +1072,8 @@ namespace DJCMS.ViewModels
             {
                 Stop();
 
-                _currentTrack?.Reader.Dispose();
-                _bufferTrack?.Reader.Dispose();
+                _currentTrack?.Dispose();
+                _bufferTrack?.Dispose();
 
                 _currentTrack = null;
                 _bufferTrack = null;
@@ -1198,13 +1198,13 @@ namespace DJCMS.ViewModels
 
                 try
                 {
-                    _currentTrack?.Reader.Dispose();
+                    _currentTrack?.Dispose();
                 }
                 catch { }
 
                 try
                 {
-                    _bufferTrack?.Reader.Dispose();
+                    _bufferTrack?.Dispose();
                 }
                 catch { }
 

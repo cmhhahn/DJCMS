@@ -106,7 +106,9 @@ public sealed class PlayingTrack : IDisposable
         try
         {
             if (_disposed) return;
-            this.Reader?.Dispose();
+            // Dispose the fade provider which owns the reader. This centralizes ownership
+            // and avoids direct reader disposal scattered across the app.
+            _fadeSampleProvider?.Dispose();
             _disposed = true;
         }
         catch
