@@ -6,7 +6,7 @@ using System.IO;
 namespace DJCMS.Models;
 
 public sealed class PlayingTrack : IDisposable
-{
+{    
     public AudioFileReader Reader { get; }
     public ISampleProvider Provider { get; }
     private FadeSampleProvider _fadeSampleProvider { get; }
@@ -14,6 +14,8 @@ public sealed class PlayingTrack : IDisposable
     public PlaylistTrack Track { get; }
 
     public bool fadingOut = false;
+
+    public Guid LoggyID => _fadeSampleProvider.loggyID;
 
     private PlayingTrack(PlaylistTrack track, int offset)
     {
@@ -161,13 +163,12 @@ public class FadeSampleProvider : ISampleProvider, IDisposable
 
     bool fadeIn = true;
 
-    public Guid _id;
+    public Guid loggyID = Guid.NewGuid();
 
     public FadeSampleProvider(ISampleProvider source, IDisposable reader, Guid id)
     {
         this.source = source;
         _reader = reader;
-        _id = id;
     }
 
     // begin a short fade to 0 over duration; safe to call from UI thread
