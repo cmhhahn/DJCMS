@@ -52,7 +52,7 @@ public sealed class PlayingTrack : IDisposable
             DelayBy = TimeSpan.FromSeconds(offset)
         };
 
-        _fadeSampleProvider = new FadeSampleProvider(provider,Reader);
+        _fadeSampleProvider = new FadeSampleProvider(provider,Reader,TrackID);
         Provider = _fadeSampleProvider;
     }
 
@@ -126,15 +126,19 @@ public class FadeSampleProvider : ISampleProvider, IDisposable
     int samplesRemaining = 0; // samples left in fade (per channel sample count)
     public event EventHandler? FadeOutCompleted;
 
-    IDisposable reader;
+    IDisposable _reader;
 
     public bool FadingOut = false;
 
     bool fadeIn = true;
 
-    public FadeSampleProvider(ISampleProvider source, IDisposable reaser)
+    public Guid _id;
+
+    public FadeSampleProvider(ISampleProvider source, IDisposable reader, Guid id)
     {
         this.source = source;
+        _reader = reader;
+        _id = id;
     }
 
     // begin a short fade to 0 over duration; safe to call from UI thread
@@ -196,12 +200,12 @@ public class FadeSampleProvider : ISampleProvider, IDisposable
         try
         {
             if (_disposed) return;
-            this.reader?.Dispose();
+            this._reader?.Dispose();
             _disposed = true;
         }
         catch
         {
-            // Ignore exceptions during dispose
+            
         }
     }
 }
