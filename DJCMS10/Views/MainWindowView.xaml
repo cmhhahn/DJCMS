@@ -21,6 +21,7 @@
     <Window.Resources>
 
         <converters:GuidEqualityConverter x:Key="GuidEqualityConverter"/>
+        <converters:AddOneConverter x:Key="AddOneConverter"/>
 
         <Color x:Key="AccentColor">#FF509bec</Color>
         <!-- DarkAccentColor: slightly darker for better contrast on selected items -->
@@ -1091,7 +1092,7 @@
                     </Thumb.Style>
                 </Thumb>
 
-                <ListBox x:Name="Tracks"
+                <ListBox x:Name="Tracks" AlternationCount="1000000"
                          ScrollViewer.CanContentScroll="False"
                          ScrollViewer.VerticalScrollBarVisibility="Auto"
                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
@@ -1133,10 +1134,14 @@
                                     <StackPanel Orientation="Horizontal">
 
                                         <Grid Height="25" Width="30" Margin="8,0,7,0">
-                                            <TextBlock x:Name="TrackNumberIndicator" Foreground="White" Opacity="7" FontSize="16"
+                                            <TextBlock x:Name="TrackNumberIndicator" Foreground="White" Opacity="0.7" FontSize="16"
                                                 HorizontalAlignment="Center" 
                                                 VerticalAlignment="Center" 
-                                                TextAlignment="Center" Text="99"  />
+                                                TextAlignment="Center"
+                                                Text="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=(ItemsControl.AlternationIndex), Converter={StaticResource AddOneConverter}}"  />
+                                            <Grid x:Name="PlayingIndicator">
+                                                
+                                            </Grid>
                                         </Grid>
                                         
 
