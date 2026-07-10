@@ -82,8 +82,35 @@ public sealed class PlayingTrack : IDisposable
         return Task.Run(() => new PlayingTrack(track, offset));
     }
 
-    public TimeSpan TotalTime => Reader?.TotalTime??TimeSpan.MinValue;
-    public TimeSpan CurrentTime => Reader?.CurrentTime??TimeSpan.MinValue;
+    public TimeSpan TotalTime
+    {
+        get
+        {
+            try
+            {
+                return Reader?.TotalTime ?? TimeSpan.MinValue;
+            }
+            catch
+            {
+                return TimeSpan.MinValue;
+            }
+        }
+    } 
+    public TimeSpan CurrentTime
+    {
+        get
+        {
+            try
+            {
+                return Reader?.CurrentTime ?? TimeSpan.MinValue;
+            }
+            catch
+            {
+                return TimeSpan.MinValue;
+            }
+        }
+    }
+    
 
     public void Seek(TimeSpan time)
     {
