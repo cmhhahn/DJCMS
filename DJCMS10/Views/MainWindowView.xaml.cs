@@ -38,6 +38,8 @@ namespace DJCMS.Views
             SourceInitialized += MainWindowView_SourceInitialized;
             StateChanged += MainWindowView_StateChanged;
             Loaded += MainWindowView_Loaded;
+
+            
         }
 
         private void MainWindowView_Loaded(object sender, RoutedEventArgs e)
@@ -425,11 +427,25 @@ namespace DJCMS.Views
             Close();
         }
 
+
+        bool _dragBlock = false;
+        async void DragBlock()
+        {
+            _dragBlock = true;
+            await Task.Delay(1000);
+            _dragBlock = false;
+        }
+
         private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ClickCount == 2)
             {
+                DragBlock();
                 MaximizeButton_Click(sender, e);
+            }
+            else if (_dragBlock)
+            {
+                return;
             }
             else
             {
@@ -454,6 +470,11 @@ namespace DJCMS.Views
 
         private void ListBoxItem_PreviewMouseMove(object sender, MouseEventArgs e)
         {
+            if (_dragBlock)
+            {
+                return;
+            }
+
             if (e.LeftButton == MouseButtonState.Pressed && sender is ListBoxItem listBoxItem)
             {
                  Point currentPosition = e.GetPosition(null);
@@ -480,6 +501,11 @@ namespace DJCMS.Views
 
         private void ListBoxItem_DragOver(object sender, DragEventArgs e)
         {
+            if (_dragBlock)
+            {
+                return;
+            }
+
             bool hasValidData = false;
             DragDropEffects effect = DragDropEffects.None;
 
@@ -535,6 +561,11 @@ namespace DJCMS.Views
 
         private void ListBoxItem_Drop(object sender, DragEventArgs e)
         {
+            if (_dragBlock)
+            {
+                return;
+            }
+
             if (sender is ListBoxItem targetItem)
             {
                 targetItem.Tag = null;
@@ -607,6 +638,11 @@ namespace DJCMS.Views
 
         private void HandleDroppedFiles(string[] files, object sender, MainWindowViewModel vm)
         {
+            if (_dragBlock)
+            {
+                return;
+            }
+
             if (sender is ListBoxItem dropTargetItem && dropTargetItem.DataContext is PlaylistTrack dropTargetTrack)
             {
                 // Insert at the position of the target item
@@ -640,6 +676,11 @@ namespace DJCMS.Views
 
         private void ListBox_DragOver(object sender, DragEventArgs e)
         {
+            if (_dragBlock)
+            {
+                return;
+            }
+
             // Allow dropping external files on empty space in the ListBox
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
@@ -655,6 +696,11 @@ namespace DJCMS.Views
 
         private void ListBox_Drop(object sender, DragEventArgs e)
         {
+            if (_dragBlock)
+            {
+                return;
+            }
+
             // Handle external file drops on empty space
             if (e.Data.GetDataPresent(DataFormats.FileDrop) && DataContext is MainWindowViewModel viewModel)
             {
@@ -667,6 +713,11 @@ namespace DJCMS.Views
 
         private void UIElement_OnPreviewMouseMove(object sender, MouseEventArgs e)
         {
+            if (_dragBlock)
+            {
+                return;
+            }
+
             if (e.LeftButton == MouseButtonState.Pressed)
             {
                 // If in full-screen, exit and continue dragging
@@ -703,6 +754,11 @@ namespace DJCMS.Views
 
         private void Splitter_DragDelta(object sender, DragDeltaEventArgs e)
         {
+            if (_dragBlock)
+            {
+                return;
+            }
+
             // Resize the left column (library) when the splitter thumb is dragged.
             // Positive HorizontalChange indicates the mouse moved to the right -> increase left column.
             if (MainArea == null) return;
@@ -724,6 +780,36 @@ namespace DJCMS.Views
             if (newWidth > maxWidth) newWidth = Math.Max(minWidth, maxWidth);
 
             leftColumn.Width = new System.Windows.GridLength(newWidth);
+        }
+
+        private void Window_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if(e.Key == Key.F11 || e.Key == Key.F)
+            {
+                FullScreenButton_Click(sender, e);
+                e.Handled = true;
+                return;
+            }
+
+            (this.DataContext as MainWindowViewModel)?.OnPreviewKeyDown(e.Key);
+            e.Handled = true;
+        }
+
+        private void Window_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
+            {
+                // Handle zooming in/out if Ctrl is pressed
+                if (e.Delta > 0)
+                {
+                    (this.DataContext as MainWindowViewModel)?.VolumeUp();
+                }
+                else
+                {
+                    (this.DataContext as MainWindowViewModel)?.VolumeDown();
+                }
+                e.Handled = true;
+            }
         }
     }
 }

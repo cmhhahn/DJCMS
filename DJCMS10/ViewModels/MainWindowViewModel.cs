@@ -979,6 +979,8 @@ namespace DJCMS.ViewModels
             LoadPlaylistFiles(fileArray1);
 
             NotifyOfChangeAsyncDelay(nameof(PlaylistTime));
+
+            Action();
         }
 
         private async void AutoLoad2()
@@ -1251,11 +1253,18 @@ namespace DJCMS.ViewModels
             NotifyOfPropertyChange(propertyName);
         }
 
+        string stagedHistory = null;
         internal async void Action()
         {
-            Task.Delay(1000).Wait(); // Wait for 500ms to allow any UI updates to complete
+            await Task.Delay(400); // Wait for 500ms to allow any UI updates to complete
             string history = JsonSerializer.Serialize(_tracks);
-            History.Push(history);
+
+            if (stagedHistory != null)
+            {
+                History.Push(stagedHistory);
+            }
+
+            stagedHistory = history;
         }
 
         internal async void Undo()
@@ -1267,6 +1276,7 @@ namespace DJCMS.ViewModels
                 if (tracks != null)
                 {
                     Tracks = tracks;
+                    stagedHistory = lastState;
                     NotifyOfChangeAsyncDelay(nameof(PlaylistTime));
                 }
             }
@@ -1283,9 +1293,67 @@ namespace DJCMS.ViewModels
                 _logger.Debug($"PreviewKeyDown received: {key}");
 
                 // Example default behavior: space toggles play/pause
-                if (key == Key.Space)
+                if (key == Key.Space || key == Key.MediaPlayPause)
                 {
                     TogglePlay();
+                }
+                else if (key == Key.PageDown || key == Key.MediaNextTrack)
+                {
+                    SkipForward();
+                }
+                else if (key == Key.PageUp || key == Key.MediaPreviousTrack)
+                {
+                    SkipBackward();
+                }
+                else if (key == Key.Delete)
+                {
+                    PlaylistTrack? nextItem = null;
+                    try
+                    {
+                        var nextIndex = Tracks.IndexOf(Tracks.FirstOrDefault(t => t.ID == (_selectionID ?? Guid.Empty)) ?? new()) + 1;
+                        nextItem = Tracks[nextIndex];
+                    }
+                    catch { }
+
+                    try
+                    {
+                        RemoveTrack(_selectionID ?? Guid.Empty);
+                    }
+                    catch { }
+
+                    try
+                    {
+                        if (nextItem != null)
+                        {
+                            SelectedTrack = nextItem;
+                        }
+                    }
+                    catch { }
+                }
+                else if (key == Key.Up)
+                {
+                    var currentIndex = Tracks.IndexOf(Tracks.FirstOrDefault(t => t.ID == (_selectionID ?? Guid.Empty)) ?? new());
+                    if (currentIndex > 0)
+                    {
+                        var previousItem = Tracks[currentIndex - 1];
+                        SelectedTrack = previousItem;
+                    }
+                }
+                else if (key == Key.Down)
+                {
+                    var currentIndex = Tracks.IndexOf(Tracks.FirstOrDefault(t => t.ID == (_selectionID ?? Guid.Empty)) ?? new());
+                    if (currentIndex < Tracks.Count - 1)
+                    {
+                        var nextItem = Tracks[currentIndex + 1];
+                        SelectedTrack = nextItem;
+                    }
+                }
+                else if (key == Key.Z)
+                {
+                    if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
+                    {
+                        Undo();
+                    }
                 }
             }
             catch
@@ -1294,6 +1362,15 @@ namespace DJCMS.ViewModels
             }
         }
 
+        internal void VolumeUp()
+        {
+            Volume = Math.Min(Volume + 0.01, 1.0);
+        }
+
+        internal void VolumeDown()
+        {
+            Volume = Math.Max(Volume - 0.01, 0.0);
+        }
 
         public string PlaylistTime
         {
