@@ -104,7 +104,14 @@ public sealed class PlayingTrack : IDisposable
         {
             try
             {
-                return Reader?.CurrentTime ?? TimeSpan.MinValue;
+                if(!_disposed && !_fadeSampleProvider._disposed)
+                {
+                    return Reader?.CurrentTime ?? TimeSpan.MinValue;
+                }
+                else
+                {
+                    return TimeSpan.MinValue;
+                }
             }
             catch
             {
@@ -224,7 +231,7 @@ public class FadeSampleProvider : ISampleProvider, IDisposable
         return read;
     }
 
-    bool _disposed;
+    public bool _disposed;
     public void Dispose()
     {
         try
