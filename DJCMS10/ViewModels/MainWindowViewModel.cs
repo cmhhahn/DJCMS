@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Text.Json;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Threading;
 using Serilog;
 
@@ -22,6 +23,8 @@ namespace DJCMS.ViewModels
         private readonly EqualizerSampleProvider _equalizer;
         private readonly WaveOutEvent _output;
         private readonly WaveFormat _mixerFormat = WaveFormat.CreateIeeeFloatWaveFormat(44100, 2);
+
+        private Stack<string> History = new Stack<string>();
 
         private PlayingTrack? _currentTrack;
         private PlayingTrack? _bufferTrack;
@@ -353,6 +356,8 @@ namespace DJCMS.ViewModels
 
             var files = (string[])e.Data.GetData(DataFormats.FileDrop);
             LoadFiles(files);
+
+            Action();
         }
 
         private bool _isPlaying;
@@ -554,6 +559,8 @@ namespace DJCMS.ViewModels
             {
                 Tracks.Add(track);
                 NotifyOfChangeAsyncDelay(nameof(PlaylistTime));
+
+                Action();
             }
         }
 
@@ -564,6 +571,8 @@ namespace DJCMS.ViewModels
             {
                 track.GapSeconds--;
                 NotifyOfChangeAsyncDelay(nameof(PlaylistTime));
+
+                Action();
             }
         }
 
@@ -574,6 +583,8 @@ namespace DJCMS.ViewModels
             {
                 track.GapSeconds++;
                 NotifyOfChangeAsyncDelay(nameof(PlaylistTime));
+
+                Action();
             }
         }
 
@@ -593,6 +604,8 @@ namespace DJCMS.ViewModels
             {
                 Tracks.Remove(track);
                 NotifyOfChangeAsyncDelay(nameof(PlaylistTime));
+
+                Action();
             }
         }
 
@@ -1154,14 +1167,29 @@ namespace DJCMS.ViewModels
             var tracks = await LoadPlaylistFile(filename);
 
             if (tracks != null && tracks.Any())
+            {
                 Tracks = tracks;
+                Action();
+            }
         }
 
         public static async Task<ObservableCollection<PlaylistTrack>> LoadPlaylistFile(string filePath)
         {
             try
             {
-                string json = await File.ReadAllTextAsync(filePath);
+                string json = await File.ReadAllTextAsync(filePath);               
+                return LoadJson(json);
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
+        public static ObservableCollection<PlaylistTrack> LoadJson(string json)
+        {
+            try
+            {
                 var tracks =
                     JsonSerializer.Deserialize<ObservableCollection<PlaylistTrack>>(json);
                 return tracks ?? new ObservableCollection<PlaylistTrack>();
@@ -1222,6 +1250,50 @@ namespace DJCMS.ViewModels
             await Task.Delay(500);
             NotifyOfPropertyChange(propertyName);
         }
+
+        internal async void Action()
+        {
+            Task.Delay(1000).Wait(); // Wait for 500ms to allow any UI updates to complete
+            string history = JsonSerializer.Serialize(_tracks);
+            History.Push(history);
+        }
+
+        internal async void Undo()
+        {
+            if (History.Count > 0)
+            {
+                string lastState = History.Pop();
+                var tracks = JsonSerializer.Deserialize<ObservableCollection<PlaylistTrack>>(lastState);
+                if (tracks != null)
+                {
+                    Tracks = tracks;
+                    NotifyOfChangeAsyncDelay(nameof(PlaylistTime));
+                }
+            }
+        }
+
+
+
+        // Receives global PreviewKeyDown events forwarded from the view.
+        // The pressed Key is provided so the ViewModel can handle it.
+        public void OnPreviewKeyDown(Key key)
+        {
+            try
+            {
+                _logger.Debug($"PreviewKeyDown received: {key}");
+
+                // Example default behavior: space toggles play/pause
+                if (key == Key.Space)
+                {
+                    TogglePlay();
+                }
+            }
+            catch
+            {
+                // swallow to avoid UI exceptions from unhandled key processing
+            }
+        }
+
 
         public string PlaylistTime
         {

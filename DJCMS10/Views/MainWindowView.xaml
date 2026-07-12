@@ -16,6 +16,7 @@
         Background="Transparent"
         WindowStyle="None"
         AllowsTransparency="True"
+        cal:Message.Attach="[Event PreviewKeyDown]=[Action OnPreviewKeyDown($eventArgs)]"
         Title="DJCMS - DJ Content Management System">
 
     <Window.Resources>

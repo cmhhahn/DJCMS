@@ -591,6 +591,8 @@ namespace DJCMS.Views
                         viewModel.Tracks.Move(droppedIndex, newIndex);
                     }
                 }
+
+                viewModel.Action();
             }
             // Handle external file drops
             else if (e.Data.GetDataPresent(DataFormats.FileDrop) && DataContext is MainWindowViewModel vm2)
@@ -632,6 +634,8 @@ namespace DJCMS.Views
                 // Drop at the end if no specific target
                 vm.LoadFiles(files);
             }
+
+            vm.Action();
         }
 
         private void ListBox_DragOver(object sender, DragEventArgs e)
