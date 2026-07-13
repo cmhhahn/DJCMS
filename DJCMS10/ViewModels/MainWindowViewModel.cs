@@ -24,6 +24,11 @@ namespace DJCMS.ViewModels
         private readonly WaveOutEvent _output;
         private readonly WaveFormat _mixerFormat = WaveFormat.CreateIeeeFloatWaveFormat(44100, 2);
 
+        // Library folder watcher
+        private FileSystemWatcher? _libraryWatcher;
+        private readonly string _libraryFolderPath = @"D:\Music\DJing\717_backup";
+        private DateTime _lastLibraryReload = DateTime.MinValue;
+
         private Stack<string> History = new Stack<string>();
 
         private PlayingTrack? _currentTrack;
@@ -127,7 +132,77 @@ namespace DJCMS.ViewModels
             _timer.Start();
 
             AutoLoad();
+            // start watching the library folder for changes
+            SetupLibraryWatcher();
             _logger.Information("MainWindowViewModel initialized");
+        }
+
+        private void SetupLibraryWatcher()
+        {
+            try
+            {
+                // dispose existing watcher if any
+                _libraryWatcher?.Dispose();
+
+                _libraryWatcher = new FileSystemWatcher(_libraryFolderPath)
+                {
+                    NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName | NotifyFilters.LastWrite,
+                    IncludeSubdirectories = false,
+                    EnableRaisingEvents = true
+                };
+
+                _libraryWatcher.Created += OnLibraryChanged;
+                _libraryWatcher.Deleted += OnLibraryChanged;
+                _libraryWatcher.Changed += OnLibraryChanged;
+                _libraryWatcher.Renamed += OnLibraryRenamed;
+            }
+            catch (Exception ex)
+            {
+                _logger?.Warning("Failed to initialize library folder watcher: {Message}", ex.Message);
+            }
+        }
+
+        Queue<int> waiters = new Queue<int>();
+
+        private void OnLibraryChanged(object? sender, FileSystemEventArgs e)
+        {
+            try
+            {
+                // debounce rapid events
+                if ((DateTime.Now - _lastLibraryReload).TotalMilliseconds < 800)
+                {
+                    waiters.Enqueue(50);
+                    return;
+                }
+
+                _lastLibraryReload = DateTime.Now;
+
+                waiters.Enqueue(900);
+                QueueReloadLibrary();
+            }
+            catch { }
+        }
+
+        private async void QueueReloadLibrary()
+        {
+            while (waiters.Any())
+            {
+                await Task.Delay(waiters.Dequeue());
+            }
+
+            Application.Current?.Dispatcher?.BeginInvoke(new System.Action(() =>
+            {
+                try
+                {
+                    LoadLibraryFolder(_libraryFolderPath);
+                }
+                catch { }
+            }));
+        }
+
+        private void OnLibraryRenamed(object? sender, RenamedEventArgs e)
+        {
+            OnLibraryChanged(sender, e);
         }
 
         private ObservableCollection<PlaylistFile> _playlistLibrary;
@@ -961,12 +1036,7 @@ namespace DJCMS.ViewModels
             var supportedPL_Extensions = new[] { ".json" };
 
             //library
-            var libraryFolderPath = @"D:\Music\DJing\717_backup";
-            var fileArray2 = Directory.GetFiles(libraryFolderPath)
-                .Where(file => supportedExtensions.Contains(Path.GetExtension(file).ToLowerInvariant()))
-                .OrderBy(file => file)
-                .ToArray();
-            LoadLibrary(fileArray2);
+            LoadLibraryFolder(_libraryFolderPath);
 
             //tracks
             Tracks = await LoadPlaylistFile($"{localAppData}\\playlist.json");
@@ -1028,6 +1098,18 @@ namespace DJCMS.ViewModels
             }
 
             NotifyOfChangeAsyncDelay(nameof(PlaylistTime));
+        }
+
+        public void LoadLibraryFolder(string folderPath)
+        {
+            if (!Directory.Exists(folderPath))
+                return;
+            var supportedExtensions = new[] { ".mp3", ".wav", ".m4a", ".flac", ".aac", ".wma", ".ogg" };
+            var files = Directory.GetFiles(folderPath)
+                .Where(file => supportedExtensions.Contains(Path.GetExtension(file).ToLowerInvariant()))
+                .OrderBy(file => file)
+                .ToArray();
+            LoadLibrary(files);
         }
 
         public void LoadLibrary(string[] files)
@@ -1217,6 +1299,13 @@ namespace DJCMS.ViewModels
 
                 try
                 {
+                    _libraryWatcher?.Dispose();
+                    _libraryWatcher = null;
+                }
+                catch { }
+
+                try
+                {
                     foreach (var input in _mixerX.MixerInputs.ToList())
                     {
                         (input as FadeSampleProvider)?.Dispose();
@@ -1297,6 +1386,10 @@ namespace DJCMS.ViewModels
                 {
                     TogglePlay();
                 }
+                else if (key == Key.Enter)
+                {
+                    SkipToOrPlayPause();
+                }
                 else if (key == Key.PageDown || key == Key.MediaNextTrack)
                 {
                     SkipForward();
@@ -1359,6 +1452,21 @@ namespace DJCMS.ViewModels
             catch
             {
                 // swallow to avoid UI exceptions from unhandled key processing
+            }
+        }
+
+        private void SkipToOrPlayPause()
+        {
+            if (CurrentPlayingTrackId == _selectionID || _currentTrack?.TrackID == _selectedTrack?.ID)
+            {
+                TogglePlay();
+            }
+            else
+            {
+                if (_selectionID != null)
+                {
+                    PlayTrack(_selectionID.Value);
+                }
             }
         }
 
