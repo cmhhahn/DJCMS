@@ -938,7 +938,7 @@
                     </LinearGradientBrush>
                 </Border.Background>
                 <Grid>
-                    <TextBlock Text="DJCMS - DJ Content Management System - v1.32"
+                    <TextBlock Text="DJCMS - DJ Content Management System - v1.33"
                                Foreground="White"
                                VerticalAlignment="Center"
                                HorizontalAlignment="Center"
