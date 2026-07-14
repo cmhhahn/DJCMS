@@ -1134,8 +1134,9 @@
 
                                 <Grid Margin="4">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="400"/>
+                                        <ColumnDefinition Width="*" MinWidth="400" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="260"/>
                                     </Grid.ColumnDefinitions>
 
                                     <StackPanel Orientation="Horizontal">
@@ -1199,69 +1200,80 @@
                                         </StackPanel>
                                     </StackPanel>
 
+                                    <Grid Grid.Column="1">
+                                        <TextBlock Text="{Binding Artist}" FontSize="15"
+                                                   Foreground="White" Opacity="0.7"
+                                                   HorizontalAlignment="Left"
+                                                   VerticalAlignment="Center" />
+                                    </Grid>
 
-                                    <StackPanel Orientation="Horizontal"
-                                                Grid.Column="1"
-                                                HorizontalAlignment="Right"
-                                                VerticalAlignment="Center">
+                                    <Grid Grid.Column="2">
+                                        <StackPanel Orientation="Horizontal"
+            Grid.Column="2"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Center">
 
-                                        <TextBlock Text="{Binding Duration}" FontSize="15"
-                                                   Foreground="White"
-                                                   Margin="0,0,20,0" />
+                                            <TextBlock Text="{Binding Duration}" FontSize="15"
+               Foreground="White"
+               Margin="0,0,20,0" />
 
-                                        <Button Content="   " Margin="0,0,20,0">
-                                            <i:Interaction.Triggers>
-                                                <i:EventTrigger EventName="Click">
-                                                    <cal:ActionMessage MethodName="ReGenTrack">
-                                                        <cal:Parameter Value="{Binding ID}" />
-                                                    </cal:ActionMessage>
-                                                </i:EventTrigger>
-                                            </i:Interaction.Triggers>
-                                        </Button>
+                                            <Button Content="   " Margin="0,0,20,0">
+                                                <i:Interaction.Triggers>
+                                                    <i:EventTrigger EventName="Click">
+                                                        <cal:ActionMessage MethodName="ReGenTrack">
+                                                            <cal:Parameter Value="{Binding ID}" />
+                                                        </cal:ActionMessage>
+                                                    </i:EventTrigger>
+                                                </i:Interaction.Triggers>
+                                            </Button>
 
-                                        <ToggleButton x:Name="CrossFadeToggle" Margin="4,0,4,0" Style="{StaticResource CrossFadeToggleStyle}"
-                                                      IsChecked="{Binding FadeInOnCross, Mode=TwoWay}">
-                                            <TextBlock Text="FADE" />
-                                        </ToggleButton>
+                                            <!--
+                                            <ToggleButton x:Name="CrossFadeToggle" Margin="4,0,4,0" Style="{StaticResource CrossFadeToggleStyle}"
+                  IsChecked="{Binding FadeInOnCross, Mode=TwoWay}">
+                                                <TextBlock Text="FADE" />
+                                            </ToggleButton>
+                                            -->
 
-                                        <Button Content="-" Margin="3,0,3,0">
-                                            <i:Interaction.Triggers>
-                                                <i:EventTrigger EventName="Click">
-                                                    <cal:ActionMessage MethodName="Minus">
-                                                        <cal:Parameter Value="{Binding ID}" />
-                                                    </cal:ActionMessage>
-                                                </i:EventTrigger>
-                                            </i:Interaction.Triggers>
-                                        </Button>
-                                        <Border Width="40" Background="{StaticResource ControlSurfaceBrush}"
-                                                CornerRadius="4"
-                                                Padding="6,2">
-                                            <TextBlock HorizontalAlignment="Center" TextAlignment="Center"
-                                                Text="{Binding GapSeconds, StringFormat={}{0:+0.##;-0.##;0}s}"
-                                                       Foreground="White"
-                                                       FontWeight="SemiBold"/>
-                                        </Border>
-                                        <Button Content="+" Margin="3,0,3,0">
-                                            <i:Interaction.Triggers>
-                                                <i:EventTrigger EventName="Click">
-                                                    <cal:ActionMessage MethodName="Plus">
-                                                        <cal:Parameter Value="{Binding ID}" />
-                                                    </cal:ActionMessage>
-                                                </i:EventTrigger>
-                                            </i:Interaction.Triggers>
-                                        </Button>
+                                            <Button Content="-" Margin="3,0,3,0">
+                                                <i:Interaction.Triggers>
+                                                    <i:EventTrigger EventName="Click">
+                                                        <cal:ActionMessage MethodName="Minus">
+                                                            <cal:Parameter Value="{Binding ID}" />
+                                                        </cal:ActionMessage>
+                                                    </i:EventTrigger>
+                                                </i:Interaction.Triggers>
+                                            </Button>
+                                            <Border Width="40" Background="{StaticResource ControlSurfaceBrush}"
+            CornerRadius="4"
+            Padding="6,2">
+                                                <TextBlock HorizontalAlignment="Center" TextAlignment="Center"
+            Text="{Binding GapSeconds, StringFormat={}{0:+0.##;-0.##;0}s}"
+                   Foreground="White"
+                   FontWeight="SemiBold"/>
+                                            </Border>
+                                            <Button Content="+" Margin="3,0,3,0">
+                                                <i:Interaction.Triggers>
+                                                    <i:EventTrigger EventName="Click">
+                                                        <cal:ActionMessage MethodName="Plus">
+                                                            <cal:Parameter Value="{Binding ID}" />
+                                                        </cal:ActionMessage>
+                                                    </i:EventTrigger>
+                                                </i:Interaction.Triggers>
+                                            </Button>
 
-                                        <Button Content="⨉" Margin="20,0,4,0">
-                                            <i:Interaction.Triggers>
-                                                <i:EventTrigger EventName="Click">
-                                                    <cal:ActionMessage MethodName="RemoveTrack">
-                                                        <cal:Parameter Value="{Binding ID}" />
-                                                    </cal:ActionMessage>
-                                                </i:EventTrigger>
-                                            </i:Interaction.Triggers>
-                                        </Button>
+                                            <Button Content="⨉" Margin="20,0,4,0">
+                                                <i:Interaction.Triggers>
+                                                    <i:EventTrigger EventName="Click">
+                                                        <cal:ActionMessage MethodName="RemoveTrack">
+                                                            <cal:Parameter Value="{Binding ID}" />
+                                                        </cal:ActionMessage>
+                                                    </i:EventTrigger>
+                                                </i:Interaction.Triggers>
+                                            </Button>
 
-                                    </StackPanel>
+                                        </StackPanel>
+                                    </Grid>
+                                    
                                 </Grid>
                             </Border>
                             <DataTemplate.Triggers>

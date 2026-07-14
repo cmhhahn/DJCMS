@@ -172,10 +172,13 @@ public class FadeSampleProvider : ISampleProvider, IDisposable
 
     public Guid loggyID = Guid.NewGuid();
 
+    public Guid TrackID { get; set; }
+
     public FadeSampleProvider(ISampleProvider source, IDisposable reader, Guid id)
     {
         this.source = source;
         _reader = reader;
+        TrackID = id;
     }
 
     // begin a short fade to 0 over duration; safe to call from UI thread

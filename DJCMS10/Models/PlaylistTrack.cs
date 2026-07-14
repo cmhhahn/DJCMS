@@ -34,9 +34,22 @@ namespace DJCMS.Models
 
                 _filePath = value;
                 _cachedDuration = null; // Invalidate cache
+
+                using var file = TagLib.File.Create(FilePath);
+
+                Title = file.Tag.Title;
+                Artist = string.Join(',', file.Tag.Performers);
+
+                TimeSpan duration = file.Properties.Duration;
+                TotalSeconds = (int)duration.TotalSeconds;
+
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(FileName));
                 OnPropertyChanged(nameof(Duration));
+                OnPropertyChanged(nameof(Thumbnail));
+                OnPropertyChanged(nameof(Title));
+                OnPropertyChanged(nameof(Artist));
+                OnPropertyChanged(nameof(TotalSeconds));
             }
         }
 
@@ -86,16 +99,15 @@ namespace DJCMS.Models
                         _cachedDuration = "00:00";
                         return _cachedDuration;
                     }
+                                     
 
-                    using var reader = new NAudio.Wave.AudioFileReader(FilePath);
-                    var totalSeconds = (int)reader.TotalTime.TotalSeconds;
-                    TotalSeconds = totalSeconds;
+                    var totalSeconds = (int)TotalSeconds;
                     var minutes = totalSeconds / 60;
                     var seconds = totalSeconds % 60;
                     _cachedDuration = $"{minutes}:{seconds:D2}";
                     return _cachedDuration;
                 }
-                catch
+                catch (Exception e)
                 {
                     _cachedDuration = "00:00";
                     return _cachedDuration;
@@ -104,7 +116,13 @@ namespace DJCMS.Models
         }
 
         [JsonIgnore]
-        public string FileName => System.IO.Path.GetFileNameWithoutExtension(FilePath);
+        public string Title { get; set; }
+
+        [JsonIgnore]
+        public string Artist { get; set; }
+
+        [JsonIgnore]
+        public string FileName => string.IsNullOrWhiteSpace(Title)? Path.GetFileNameWithoutExtension(FilePath) : Title;
 
         [JsonIgnore]
         public ImageSource Thumbnail

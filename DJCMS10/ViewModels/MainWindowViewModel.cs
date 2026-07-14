@@ -601,7 +601,7 @@ namespace DJCMS.ViewModels
                 try
                 {
                     _currentTrack = await PlayingTrack.CreateAsync(track, 0);
-                    _mixerX.AddMixerInput(_currentTrack.Provider);
+                    AddMixerInput(_currentTrack.Provider);
                     _logger.Debug($"Mixer input ADDED: {_currentTrack.LoggyID}.  count: {_mixerX.MixerInputs.Count()}");
                     try
                     {
@@ -625,6 +625,14 @@ namespace DJCMS.ViewModels
                     catch { }
                 }
             }
+        }
+
+        private void AddMixerInput(ISampleProvider provider)
+        {
+            if (provider is FadeSampleProvider fadey && _mixerX.MixerInputs.Any(t => (t as FadeSampleProvider)?.TrackID == fadey.TrackID))
+                return;
+
+            _mixerX.AddMixerInput(provider);
         }
 
         public void AddTrack(Guid trackId)
@@ -798,7 +806,7 @@ namespace DJCMS.ViewModels
                 if (_currentTrack.Track.GapSeconds > -1)
                 {
                     var nextTrack = GetNextTrack();
-                    if (nextTrack != null && !Buffering)
+                    if (nextTrack != null && !Buffering && _mixerX.MixerInputs.Count() < 3)
                     {
                         try
                         {
@@ -819,8 +827,9 @@ namespace DJCMS.ViewModels
 
                                     Task.Run(() =>
                                     {
-                                        Thread.Sleep((int)(((double)old.Track.GapSeconds + 0.5) * 1000.0)); // Wait for 1 second to ensure the track has started playing
+                                        Thread.Sleep((int)(((double)old.Track.GapSeconds + 1) * 1000.0)); // Wait for 1 second to ensure the track has started playing
                                         Buffering = false;
+                                        _bufferTrack = null;
                                     });
                                     try { 
                                         old.Dispose();
@@ -873,7 +882,7 @@ namespace DJCMS.ViewModels
                     if (remainingMs < triggerMs)
                     {
                         var nextTrack = GetNextTrack();
-                        if (nextTrack != null)
+                        if (nextTrack != null && _bufferTrack == null || _mixerX.MixerInputs.Count() < 3)
                         {
                             try
                             {
@@ -881,7 +890,7 @@ namespace DJCMS.ViewModels
                                 _currentTrack.fadingOut = true;
                                 _bufferTrack = await PlayingTrack.CreateAsync(nextTrack, 0);
                                 _bufferTrack.Reader.Volume = _bufferTrack.Track.FadeInOnCross? 0.0f : 1.0f; // Start the next track muted for fade-in
-                                _mixerX.AddMixerInput(_bufferTrack.Provider);
+                                AddMixerInput(_bufferTrack.Provider);
                                 _logger.Debug($"Mixer input ADDED: {_bufferTrack.LoggyID}.  count: {_mixerX.MixerInputs.Count()}");
                             }
                             catch
@@ -943,7 +952,7 @@ namespace DJCMS.ViewModels
                     _selectionID = nextTrack.ID;
                     SelectedTrack = nextTrack;
                     _currentTrack = await PlayingTrack.CreateAsync(nextTrack, 0);
-                    _mixerX.AddMixerInput(_currentTrack.Provider);
+                    AddMixerInput(_currentTrack.Provider);
                     _logger.Debug($"Mixer input ADDED: {_currentTrack.LoggyID}.  count: {_mixerX.MixerInputs.Count()}");
                     CurrentPlayingTrackId = nextTrack.ID;
 
@@ -984,7 +993,7 @@ namespace DJCMS.ViewModels
                     _selectionID = previousTrack.ID;
                     SelectedTrack = previousTrack;
                     _currentTrack = await PlayingTrack.CreateAsync(previousTrack, 0);
-                    _mixerX.AddMixerInput(_currentTrack.Provider);
+                    AddMixerInput(_currentTrack.Provider);
                     _logger.Debug($"Mixer input ADDED: {_currentTrack.LoggyID}.  count: {_mixerX.MixerInputs.Count()}");
                     CurrentPlayingTrackId = previousTrack.ID;
 
@@ -1018,7 +1027,7 @@ namespace DJCMS.ViewModels
             try
             {
                 _bufferTrack = await PlayingTrack.CreateAsync(track, offset);
-                _mixerX.AddMixerInput(_bufferTrack.Provider);
+                AddMixerInput(_bufferTrack.Provider);
                 _logger.Debug($"Mixer input ADDED: {_bufferTrack.LoggyID}.  count: {_mixerX.MixerInputs.Count()}");
             }
             catch (Exception e)
