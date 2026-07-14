@@ -630,7 +630,10 @@ namespace DJCMS.ViewModels
         private void AddMixerInput(ISampleProvider provider)
         {
             if (provider is FadeSampleProvider fadey && _mixerX.MixerInputs.Any(t => (t as FadeSampleProvider)?.TrackID == fadey.TrackID))
+            {
+                fadey.Dispose();
                 return;
+            }
 
             _mixerX.AddMixerInput(provider);
         }
