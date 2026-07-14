@@ -811,5 +811,15 @@ namespace DJCMS.Views
                 e.Handled = true;
             }
         }
+
+        private void RadioButton_Checked(object sender, RoutedEventArgs e)
+        {
+            (this.DataContext as MainWindowViewModel)?.Sort1();
+        }
+
+        private void RadioButton_Checked_1(object sender, RoutedEventArgs e)
+        {
+            (this.DataContext as MainWindowViewModel)?.Sort2();
+        }
     }
 }

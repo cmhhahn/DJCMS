@@ -18,6 +18,9 @@
         AllowsTransparency="True"
         PreviewKeyDown="Window_KeyDown"
         PreviewMouseWheel="Window_PreviewMouseWheel"
+        
+        FontFamily="Segoe UI"        
+        
         Title="DJCMS - DJ Content Management System - v1.36">
 
     <Window.Resources>
@@ -132,6 +135,40 @@
 
             </Setter>
 
+        </Style>
+
+        <!-- SortType RadioButton style: similar to TabItem header but uses DarkAccentColor when checked -->
+        <Style x:Key="SortRadioButtonStyle" TargetType="RadioButton">
+            <Setter Property="Foreground" Value="{StaticResource SpotifySecondaryTextBrush}" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Padding" Value="12,3" />
+            <Setter Property="Margin" Value="8,2,0,2" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="Border" Height="30"
+                                            Background="{TemplateBinding Background}"
+                                            CornerRadius="6"
+                                            Padding="{TemplateBinding Padding}"
+                                            Margin="{TemplateBinding Margin}">
+                            <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="{StaticResource SpotifyHoverBrush}" />
+                                <Setter Property="Foreground" Value="{StaticResource SpotifyTextBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <!-- Use DarkAccentColor (PlaylistSelectedBrush) when checked -->
+                                <Setter TargetName="Border" Property="Background" Value="{StaticResource PlaylistSelectedBrush}" />
+                                <Setter Property="Foreground" Value="White" />
+                                <Setter Property="FontWeight" Value="SemiBold" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <Style TargetType="TabControl">
@@ -990,47 +1027,66 @@
 
                 <TabControl>
                     <TabItem Header="Library">
-                        <ListBox x:Name="Library"
-                             ScrollViewer.CanContentScroll="False"
-                             ScrollViewer.VerticalScrollBarVisibility="Auto"
-                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                             Margin="2" Grid.Column="0"
-                             ItemsSource="{Binding LibraryFolder}"
-                             SelectedItem="{Binding LibraryItem}"
-                             ItemContainerStyle="{StaticResource DarkPlaylistItemStyle2}"
-                             Style="{StaticResource DarkPlaylistListBoxStyle}">
-                            <ListBox.Resources>
-                                <ResourceDictionary>
-                                    <Style TargetType="ScrollBar" BasedOn="{StaticResource ModernScrollBar}"/>
-                                </ResourceDictionary>
-                            </ListBox.Resources>
-                            <ListBox.ItemTemplate>
-                                <DataTemplate DataType="{x:Type local:PlaylistTrack}">
-                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
-                                        <Button Content="+" Height="26" Margin="0,0,10,0" FontSize="14">
-                                            <i:Interaction.Triggers>
-                                                <i:EventTrigger EventName="Click">
-                                                    <cal:ActionMessage MethodName="AddTrack">
-                                                        <cal:Parameter Value="{Binding ID}" />
-                                                    </cal:ActionMessage>
-                                                </i:EventTrigger>
-                                            </i:Interaction.Triggers>
-                                        </Button>
-                                        <StackPanel>
-                                            <TextBlock Text="{Binding FileName}"
-                                                FontSize="14"
-                                                FontWeight="SemiBold"
-                                                Foreground="{StaticResource PlaylistTextBrush}"/>
-                                            <TextBlock Text="{Binding Duration}"
-                                                FontSize="12"
-                                                FontWeight="Normal"
-                                                Foreground="{StaticResource PlaylistTextBrush}" Opacity="0.7"/>
-                                        </StackPanel>
 
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Sort by: "
+                                           Foreground="White"
+                                           FontSize="14"
+                                           FontWeight="SemiBold"
+                                           VerticalAlignment="Center"
+                                           Margin="20,-2,2,0"/>
+                                <RadioButton GroupName="SortType" Content="A-Z" Foreground="White" Checked="RadioButton_Checked" Style="{StaticResource SortRadioButtonStyle}" />
+                                <RadioButton GroupName="SortType" x:Name="TimeSortBtn" TextBlock.FontWeight="ExtraLight"  Content="🕒" Foreground="White" Checked="RadioButton_Checked_1" Style="{StaticResource SortRadioButtonStyle}" ToolTip="Time" />
+                            </StackPanel>
+                            <ListBox Grid.Row="1" x:Name="Library"
+                                  ScrollViewer.CanContentScroll="False"
+                                  ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                  Margin="2" Grid.Column="0"
+                                  ItemsSource="{Binding LibraryFolder}"
+                                  SelectedItem="{Binding LibraryItem}"
+                                  ItemContainerStyle="{StaticResource DarkPlaylistItemStyle2}"
+                                  Style="{StaticResource DarkPlaylistListBoxStyle}">
+                                <ListBox.Resources>
+                                    <ResourceDictionary>
+                                        <Style TargetType="ScrollBar" BasedOn="{StaticResource ModernScrollBar}"/>
+                                    </ResourceDictionary>
+                                </ListBox.Resources>
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type local:PlaylistTrack}">
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
+                                            <Button Content="+" Height="26" Margin="0,0,10,0" FontSize="14">
+                                                <i:Interaction.Triggers>
+                                                    <i:EventTrigger EventName="Click">
+                                                        <cal:ActionMessage MethodName="AddTrack">
+                                                            <cal:Parameter Value="{Binding ID}" />
+                                                        </cal:ActionMessage>
+                                                    </i:EventTrigger>
+                                                </i:Interaction.Triggers>
+                                            </Button>
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding FileName}"
+                         FontSize="14"
+                         FontWeight="SemiBold"
+                         Foreground="{StaticResource PlaylistTextBrush}"/>
+                                                <TextBlock Text="{Binding Duration}"
+                         FontSize="12"
+                         FontWeight="Normal"
+                         Foreground="{StaticResource PlaylistTextBrush}" Opacity="0.7"/>
+                                            </StackPanel>
+
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </Grid>
+
+
                     </TabItem>
                     <TabItem Header="Recent Playlists">
                         <ListBox x:Name="Playlists"  
@@ -1246,7 +1302,7 @@
                                             <Border Width="40" Background="{StaticResource ControlSurfaceBrush}"
             CornerRadius="4"
             Padding="6,2">
-                                                <TextBlock HorizontalAlignment="Center" TextAlignment="Center"
+                                                <TextBlock HorizontalAlignment="Center" TextAlignment="Center" FontSize="13"
             Text="{Binding GapSeconds, StringFormat={}{0:+0.##;-0.##;0}s}"
                    Foreground="White"
                    FontWeight="SemiBold"/>
@@ -1273,7 +1329,7 @@
 
                                         </StackPanel>
                                     </Grid>
-                                    
+
                                 </Grid>
                             </Border>
                             <DataTemplate.Triggers>

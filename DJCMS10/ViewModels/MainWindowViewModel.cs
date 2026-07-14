@@ -481,13 +481,13 @@ namespace DJCMS.ViewModels
             }
             else
             {
-                Play();                
+                Play();
             }
         }
 
         public void Play()
         {
-            if(_currentTrack == null && _selectionID == null)
+            if (_currentTrack == null && _selectionID == null)
             {
                 var firstTrack = Tracks.FirstOrDefault();
                 if (firstTrack != null)
@@ -540,7 +540,7 @@ namespace DJCMS.ViewModels
         {
             if (clickyPTime.Item1 == listId && (DateTime.Now - clickyPTime.Item2).TotalMilliseconds < 200)
             {
-                LoadAPlaylistFile(GetPlaylistFromId(listId)?.FilePath??"");
+                LoadAPlaylistFile(GetPlaylistFromId(listId)?.FilePath ?? "");
             }
 
             clickyPTime = new Tuple<Guid, DateTime>(listId, DateTime.Now);
@@ -551,7 +551,7 @@ namespace DJCMS.ViewModels
 
         public void ClickyPlayTrack(Guid trackId)
         {
-            if(clickyTime.Item1 == trackId && (DateTime.Now - clickyTime.Item2).TotalMilliseconds < 200)
+            if (clickyTime.Item1 == trackId && (DateTime.Now - clickyTime.Item2).TotalMilliseconds < 200)
             {
                 PlayTrack(trackId);
             }
@@ -759,7 +759,7 @@ namespace DJCMS.ViewModels
                     CurrentTime = $"{(int)_currentTrack.CurrentTime.TotalMinutes}:{_currentTrack.CurrentTime.Seconds:D2}";
                     TotalTime = $"{(int)_currentTrack.TotalTime.TotalMinutes}:{_currentTrack.TotalTime.Seconds:D2}";
                 }
-                catch { }                
+                catch { }
             }
 
             // if the progress is not moving (use epsilon to avoid float jitter), the current playing track is probably done
@@ -782,10 +782,12 @@ namespace DJCMS.ViewModels
                         _bufferTrack = null;
 
                         // dispose previous reader if it's no longer used
-                        try { 
+                        try
+                        {
                             old.Dispose();
                             _logger.Debug($"Mixer input auto-removed F {_currentTrack.LoggyID}.  count: {_mixerX.MixerInputs.Count()}");
-                        } catch { }
+                        }
+                        catch { }
                     }
                     catch
                     {
@@ -796,7 +798,7 @@ namespace DJCMS.ViewModels
                         _bufferTrack = null;
                     }
                     return;
-                }                
+                }
             }
 
             // prepare some timing helpers
@@ -834,10 +836,12 @@ namespace DJCMS.ViewModels
                                         Buffering = false;
                                         _bufferTrack = null;
                                     });
-                                    try { 
+                                    try
+                                    {
                                         old.Dispose();
                                         _logger.Debug($"Mixer input auto-removed 0 {_currentTrack.LoggyID}.  count: {_mixerX.MixerInputs.Count()}");
-                                    } catch { }
+                                    }
+                                    catch { }
                                 }
                                 catch
                                 {
@@ -892,7 +896,7 @@ namespace DJCMS.ViewModels
                                 _currentTrack.BeginFadeOut();
                                 _currentTrack.fadingOut = true;
                                 _bufferTrack = await PlayingTrack.CreateAsync(nextTrack, 0);
-                                _bufferTrack.Reader.Volume = _bufferTrack.Track.FadeInOnCross? 0.0f : 1.0f; // Start the next track muted for fade-in
+                                _bufferTrack.Reader.Volume = _bufferTrack.Track.FadeInOnCross ? 0.0f : 1.0f; // Start the next track muted for fade-in
                                 AddMixerInput(_bufferTrack.Provider);
                                 _logger.Debug($"Mixer input ADDED: {_bufferTrack.LoggyID}.  count: {_mixerX.MixerInputs.Count()}");
                             }
@@ -976,7 +980,7 @@ namespace DJCMS.ViewModels
                     IsPlaying = false;
                     try
                     {
-                        MessageBox.Show($"Failed to skip to track: {nextTrack.FileName}\n\nError: {ex.Message}", 
+                        MessageBox.Show($"Failed to skip to track: {nextTrack.FileName}\n\nError: {ex.Message}",
                             "Playback Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                     }
                     catch { }
@@ -1017,7 +1021,7 @@ namespace DJCMS.ViewModels
                     IsPlaying = false;
                     try
                     {
-                        MessageBox.Show($"Failed to skip to track: {previousTrack.FileName}\n\nError: {ex.Message}", 
+                        MessageBox.Show($"Failed to skip to track: {previousTrack.FileName}\n\nError: {ex.Message}",
                             "Playback Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                     }
                     catch { }
@@ -1043,7 +1047,7 @@ namespace DJCMS.ViewModels
 
         private async void AutoLoad()
         {
-            
+
             var supportedExtensions = new[] { ".mp3", ".wav", ".m4a", ".flac", ".aac", ".wma", ".ogg" };
             var supportedPL_Extensions = new[] { ".json" };
 
@@ -1246,7 +1250,7 @@ namespace DJCMS.ViewModels
             {
                 var tracks = await LoadPlaylistFile(dialog.FileName);
 
-                if(tracks != null && tracks.Any())
+                if (tracks != null && tracks.Any())
                     return tracks;
                 else
                     return null;
@@ -1273,7 +1277,7 @@ namespace DJCMS.ViewModels
         {
             try
             {
-                string json = await File.ReadAllTextAsync(filePath);               
+                string json = await File.ReadAllTextAsync(filePath);
                 return LoadJson(json);
             }
             catch (Exception ex)
@@ -1501,6 +1505,16 @@ namespace DJCMS.ViewModels
                 var seconds = totalSeconds % 60;
                 return $"{minutes}:{seconds:D2}";
             }
+        }
+
+        public void Sort1()
+        {
+            LibraryFolder = new ObservableCollection<PlaylistTrack>(LibraryFolder.OrderBy(t => t.FileName));
+        }
+
+        public void Sort2()
+        {
+            LibraryFolder = new ObservableCollection<PlaylistTrack>(LibraryFolder.OrderBy(t => t.Duration));
         }
     }
 }
