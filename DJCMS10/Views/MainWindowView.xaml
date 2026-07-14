@@ -18,7 +18,7 @@
         AllowsTransparency="True"
         PreviewKeyDown="Window_KeyDown"
         PreviewMouseWheel="Window_PreviewMouseWheel"
-        Title="DJCMS - DJ Content Management System">
+        Title="DJCMS - DJ Content Management System - v1.36">
 
     <Window.Resources>
 
@@ -47,7 +47,7 @@
 
         <LinearGradientBrush x:Key="PlaylistItemBrush" StartPoint="0,0" EndPoint="0,1">
             <GradientStop Color="#FF26282A" Offset="0"/>
-            <GradientStop Color="#8826282A" Offset="1"/>
+            <GradientStop Color="#5526282A" Offset="1"/>
         </LinearGradientBrush>
 
         <SolidColorBrush x:Key="PlaylistItemBrushX"
@@ -901,7 +901,7 @@
                     </LinearGradientBrush>
                 </Border.Background>
                 <Grid>
-                    <TextBlock Text="DJCMS - DJ Content Management System"
+                    <TextBlock Text="DJCMS - DJ Content Management System - v1.32"
                                Foreground="White"
                                VerticalAlignment="Center"
                                HorizontalAlignment="Center"
