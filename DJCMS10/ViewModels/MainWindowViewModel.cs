@@ -1071,7 +1071,7 @@ namespace DJCMS.ViewModels
             LoadLibraryFolder(_libraryFolderPath);
 
             //tracks
-            Tracks = await LoadPlaylistFile($"{localAppData}\\playlist.json");
+            Tracks = await LoadPlaylistFile($"{localAppData}\\July-17_exp.json");
 
             //playlists
             var fileArray1 = Directory.GetFiles(localAppData)
