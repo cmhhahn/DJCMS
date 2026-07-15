@@ -21,7 +21,7 @@
         
         FontFamily="Segoe UI"        
         
-        Title="DJCMS - DJ Content Management System - v1.36">
+        Title="DJCMS - DJ Content Management System - v1.34">
 
     <Window.Resources>
 
@@ -938,7 +938,7 @@
                     </LinearGradientBrush>
                 </Border.Background>
                 <Grid>
-                    <TextBlock Text="DJCMS - DJ Content Management System - v1.33"
+                    <TextBlock Text="DJCMS - DJ Content Management System - v1.34"
                                Foreground="White"
                                VerticalAlignment="Center"
                                HorizontalAlignment="Center"

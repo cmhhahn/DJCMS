@@ -627,15 +627,16 @@ namespace DJCMS.ViewModels
             }
         }
 
-        private void AddMixerInput(ISampleProvider provider)
+        private bool AddMixerInput(ISampleProvider provider)
         {
             if (provider is FadeSampleProvider fadey && _mixerX.MixerInputs.Any(t => (t as FadeSampleProvider)?.TrackID == fadey.TrackID))
             {
                 fadey.Dispose();
-                return;
+                return false;
             }
 
             _mixerX.AddMixerInput(provider);
+            return true;
         }
 
         public void AddTrack(Guid trackId)
@@ -816,7 +817,12 @@ namespace DJCMS.ViewModels
                         try
                         {
                             Buffering = true;
-                            await PrepareBufferTrackAsync(nextTrack, _currentTrack.Track.GapSeconds);
+                            var success = await PrepareBufferTrackAsync(nextTrack, _currentTrack.Track.GapSeconds);
+
+                            if (!success)
+                            {
+                                return;
+                            }
 
                             // Verify buffer track was created successfully
                             if (_bufferTrack != null)
@@ -1029,17 +1035,27 @@ namespace DJCMS.ViewModels
             }
         }
 
-        private async Task PrepareBufferTrackAsync(PlaylistTrack track, int offset)
+        private async Task<bool> PrepareBufferTrackAsync(PlaylistTrack track, int offset)
         {
             try
             {
-                _bufferTrack = await PlayingTrack.CreateAsync(track, offset);
-                AddMixerInput(_bufferTrack.Provider);
-                _logger.Debug($"Mixer input ADDED: {_bufferTrack.LoggyID}.  count: {_mixerX.MixerInputs.Count()}");
+                var _bufferBuffer = await PlayingTrack.CreateAsync(track, offset);               
+                bool success = AddMixerInput(_bufferBuffer.Provider);
+                if (success)
+                {
+                    _bufferTrack = _bufferBuffer;
+                    _logger.Debug($"Mixer input ADDED: {_bufferTrack.LoggyID}.  count: {_mixerX.MixerInputs.Count()}");
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
             catch (Exception e)
             {
                 _bufferTrack = null;
+                return false;
             }
         }
 
