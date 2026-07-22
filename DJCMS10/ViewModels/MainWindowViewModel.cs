@@ -10,12 +10,23 @@ using System.Text.Json;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
+using System.Threading;
+using System.Diagnostics;
+using System.Threading.Tasks;
 using Serilog;
 
 namespace DJCMS.ViewModels
 {
     public class MainWindowViewModel : Screen
     {
+        private static string localAppData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DJCMS");
+        private static Settings _settings = LoadSettings();
+
+        // Save queuing helpers
+        private CancellationTokenSource? _saveSettingsCts;
+        private readonly object _saveSettingsLock = new object();
+        private const int SaveDebounceMs = 1500;
+
         private readonly IEventAggregator _eventAggregator;
         private readonly ILogger _logger;
         private readonly DispatcherTimer _timer;
@@ -36,7 +47,6 @@ namespace DJCMS.ViewModels
         private double _progress;
         private bool _dragging;
         private Guid? _selectionID;
-        private double _volume = 0.5;
 
         // Equalizer band gains (in dB)
         private float _band0 = 0f;
@@ -100,7 +110,7 @@ namespace DJCMS.ViewModels
 
             try
             {
-                _output.Volume = (float)_volume;
+                _output.Volume = (float)_settings.Volume;
 
                 _output.Init(_equalizer);
                 //_output.Play();
@@ -205,7 +215,7 @@ namespace DJCMS.ViewModels
             OnLibraryChanged(sender, e);
         }
 
-        private ObservableCollection<PlaylistFile> _playlistLibrary;
+        private ObservableCollection<PlaylistFile> _playlistLibrary = new ObservableCollection<PlaylistFile>();
         public ObservableCollection<PlaylistFile> PlaylistLibrary
         {
             get => _playlistLibrary;
@@ -217,7 +227,7 @@ namespace DJCMS.ViewModels
         }
 
 
-        private ObservableCollection<PlaylistTrack> _libraryFolder;
+        private ObservableCollection<PlaylistTrack> _libraryFolder = new ObservableCollection<PlaylistTrack>();
         public ObservableCollection<PlaylistTrack> LibraryFolder
         {
             get
@@ -231,7 +241,7 @@ namespace DJCMS.ViewModels
             }
         }
 
-        private ObservableCollection<PlaylistTrack> _tracks;
+        private ObservableCollection<PlaylistTrack> _tracks = new ObservableCollection<PlaylistTrack>();
         public ObservableCollection<PlaylistTrack> Tracks
         {
             get
@@ -261,21 +271,126 @@ namespace DJCMS.ViewModels
 
         public double Volume
         {
-            get => _volume;
+            get => _settings.Volume;
             set
             {
-                if (Math.Abs(_volume - value) < 0.0001)
+                if (Math.Abs(_settings.Volume - value) < 0.0001)
                     return;
-                _volume = Math.Max(0, Math.Min(1, value));
+                _settings.Volume = Math.Max(0, Math.Min(1, value));
+                SaveSettings();
                 try
                 {
-                    _output.Volume = (float)_volume;
+                    _output.Volume = (float)_settings.Volume;
                 }
                 catch
                 {
                     // ignore if output not initialized yet
                 }
                 NotifyOfPropertyChange();
+            }
+        }
+
+        public void SaveSettings()
+        {
+            try
+            {
+                if (_settings == null)
+                    return;
+
+                // Cancel any pending save and schedule a new debounced save
+                lock (_saveSettingsLock)
+                {
+                    _saveSettingsCts?.Cancel();
+                    _saveSettingsCts = new CancellationTokenSource();
+                    var token = _saveSettingsCts.Token;
+
+                    // Fire-and-forget background task; it will perform the actual save after a quiet period
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            // Wait for the debounce period or cancellation
+                            await Task.Delay(SaveDebounceMs, token);
+
+                            // If system appears busy, wait (up to several attempts) before writing
+                            int attempts = 0;
+                            while (!token.IsCancellationRequested && IsSystemBusy() && attempts < 10)
+                            {
+                                await Task.Delay(1000, token);
+                                attempts++;
+                            }
+
+                            if (token.IsCancellationRequested)
+                                return;
+
+                            // Ensure application data directory exists
+                            Directory.CreateDirectory(localAppData);
+
+                            var options = new JsonSerializerOptions
+                            {
+                                WriteIndented = true
+                            };
+
+                            var json = JsonSerializer.Serialize(_settings, options);
+                            var path = Path.Combine(localAppData, "settings.json");
+                            await File.WriteAllTextAsync(path, json, token);
+                        }
+                        catch (TaskCanceledException)
+                        {
+                            // expected when a newer save supersedes this one
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger?.Warning("Failed to save settings: {Message}", ex.Message);
+                        }
+                    }, token);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger?.Warning("Failed to queue settings save: {Message}", ex.Message);
+            }
+        }
+
+        public static Settings LoadSettings()
+        {
+            try
+            {
+                Directory.CreateDirectory(localAppData);
+                var path = Path.Combine(localAppData, "settings.json");
+                if (!File.Exists(path))
+                    throw new Exception();
+
+                var json = File.ReadAllText(path);
+                var settings = JsonSerializer.Deserialize<Settings>(json);
+                if (settings == null)
+                    throw new Exception();
+
+                return settings;
+
+            }
+            catch (Exception ex)
+            {
+                return new Settings() { Volume = 0.5 };
+            }
+        }
+
+        private static bool IsSystemBusy()
+        {
+            try
+            {
+                // Try to estimate system-wide CPU usage. If unavailable, assume not busy.
+                using var pc = new PerformanceCounter("Processor", "% Processor Time", "_Total");
+                // First call initializes; wait a short time and sample again
+                pc.NextValue();
+                Thread.Sleep(200);
+                float value = pc.NextValue();
+                // Consider system busy if CPU usage is over 70%
+                return value > 70.0f;
+            }
+            catch
+            {
+                return false;
             }
         }
 
@@ -1059,13 +1174,13 @@ namespace DJCMS.ViewModels
             }
         }
 
-        private string localAppData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DJCMS");
+        
 
         private async void AutoLoad()
         {
-
+            /*
             var supportedExtensions = new[] { ".mp3", ".wav", ".m4a", ".flac", ".aac", ".wma", ".ogg" };
-            var supportedPL_Extensions = new[] { ".json" };
+           
 
             //library
             LoadLibraryFolder(_libraryFolderPath);
@@ -1083,34 +1198,25 @@ namespace DJCMS.ViewModels
             NotifyOfChangeAsyncDelay(nameof(PlaylistTime));
 
             Action();
+            */
+
+
+            //playlists
+            LoadPlaylistsFolder();
         }
 
-        private async void AutoLoad2()
+        public void LoadPlaylistsFolder()
         {
-            var localAppData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DJCMS");
+            var playlistsFolder = Path.Combine(localAppData, "Playlists");
 
-
-            var supportedPL_Extensions = new[] { ".json" };
-            var fileArray1 = Directory.GetFiles(localAppData)
-                .Where(file => supportedPL_Extensions.Contains(Path.GetExtension(file).ToLowerInvariant()))
-                .OrderBy(file => file)
-                .ToArray();
-            LoadPlaylistFiles(fileArray1);
-
-
-            var libraryFolderPath = @"C:\Users\christian.hahn\Downloads";
-
-            var supportedExtensions = new[] { ".mp3", ".wav", ".m4a", ".flac", ".aac", ".wma", ".ogg" };
-            var fileArray2 = Directory.GetFiles(libraryFolderPath)
+            if (!Directory.Exists(playlistsFolder))
+                return;
+            var supportedExtensions = new[] { ".json" };
+            var files = Directory.GetFiles(playlistsFolder)
                 .Where(file => supportedExtensions.Contains(Path.GetExtension(file).ToLowerInvariant()))
                 .OrderBy(file => file)
                 .ToArray();
-
-            LoadLibrary(fileArray2);
-
-            Tracks = await LoadPlaylistFile($"{localAppData}\\playlist.json");
-
-            NotifyOfChangeAsyncDelay(nameof(PlaylistTime));
+            LoadPlaylistFiles(files);
         }
 
         public void LoadPlaylistFiles(string[] files)
@@ -1188,6 +1294,7 @@ namespace DJCMS.ViewModels
             try
             {
                 await SavePlaylistAsync(Tracks);
+                LoadPlaylistsFolder();
             }
             catch (Exception ex)
             {
@@ -1298,7 +1405,7 @@ namespace DJCMS.ViewModels
             }
             catch (Exception ex)
             {
-                return null;
+                return new ObservableCollection<PlaylistTrack>();
             }
         }
 
@@ -1312,7 +1419,7 @@ namespace DJCMS.ViewModels
             }
             catch (Exception ex)
             {
-                return null;
+                return new ObservableCollection<PlaylistTrack>();
             }
         }
 
@@ -1523,6 +1630,11 @@ namespace DJCMS.ViewModels
             }
         }
 
+        public void Sort0()
+        {
+            LoadLibraryFolder(_libraryFolderPath);
+        }
+
         public void Sort1()
         {
             LibraryFolder = new ObservableCollection<PlaylistTrack>(LibraryFolder.OrderBy(t => t.FileName));
@@ -1531,6 +1643,12 @@ namespace DJCMS.ViewModels
         public void Sort2()
         {
             LibraryFolder = new ObservableCollection<PlaylistTrack>(LibraryFolder.OrderBy(t => t.Duration));
+        }
+
+        internal void SaveLibrarySetting(string text)
+        {
+            _settings.MusicLibrary = text;
+            SaveSettings();
         }
     }
 }

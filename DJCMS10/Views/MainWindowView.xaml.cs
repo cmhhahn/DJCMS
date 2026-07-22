@@ -784,6 +784,11 @@ namespace DJCMS.Views
 
         private void Window_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
+            if (MenuPopup.IsOpen && (this.MusicLibraryText.IsFocused || this.MusicLibraryText.IsKeyboardFocused))
+            {
+                return;
+            }
+
             if(e.Key == Key.F11 || e.Key == Key.F)
             {
                 FullScreenButton_Click(sender, e);
@@ -812,6 +817,11 @@ namespace DJCMS.Views
             }
         }
 
+        private void RadioButton_Checked_0(object sender, RoutedEventArgs e)
+        {
+            (this.DataContext as MainWindowViewModel)?.Sort0();
+        }
+
         private void RadioButton_Checked(object sender, RoutedEventArgs e)
         {
             (this.DataContext as MainWindowViewModel)?.Sort1();
@@ -820,6 +830,11 @@ namespace DJCMS.Views
         private void RadioButton_Checked_1(object sender, RoutedEventArgs e)
         {
             (this.DataContext as MainWindowViewModel)?.Sort2();
+        }
+
+        private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            (this.DataContext as MainWindowViewModel)?.SaveLibrarySetting(MusicLibraryText.Text);
         }
     }
 }

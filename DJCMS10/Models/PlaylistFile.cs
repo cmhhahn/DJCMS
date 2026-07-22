@@ -67,7 +67,7 @@ public class PlaylistFile : INotifyPropertyChanged
                 return _cachedThumbnail;
             }
 
-            _cachedThumbnail = TrackThumbnailGenerator.Generate(ID.ToString());
+            _cachedThumbnail = TrackThumbnailGenerator.Generate(FileName);
             return _cachedThumbnail;
         }
     }

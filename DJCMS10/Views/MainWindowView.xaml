@@ -53,6 +53,11 @@
             <GradientStop Color="#5526282A" Offset="1"/>
         </LinearGradientBrush>
 
+        <LinearGradientBrush x:Key="SaveBrush" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#26282A" Offset="0"/>
+            <GradientStop Color="#26282A" Offset="1"/>
+        </LinearGradientBrush>
+
         <SolidColorBrush x:Key="PlaylistItemBrushX"
                    Color="#26282A"/>
 
@@ -971,12 +976,12 @@
                            AllowsTransparency="True"
                            PopupAnimation="Slide"
                            DataContext="{Binding DataContext, ElementName=MenuButton}">
-                        <Border Background="{StaticResource PlaylistItemBrush}"
+                        <Border Background="{StaticResource SaveBrush}"
                                 CornerRadius="6"
                                 Padding="4"
                                 BorderBrush="{StaticResource SpotifyAccentColor}"
                                 BorderThickness="1">
-                            <StackPanel>
+                            <StackPanel Margin="2">
                                 <Button Style="{StaticResource PopupMenuButtonStyle}"
                                         cal:Message.Attach="[Event Click] = [Action SavePlaylist()]">
                                     Save Playlist
@@ -985,6 +990,13 @@
                                         cal:Message.Attach="[Event Click] = [Action LoadPlaylist()]">
                                     Load Playlist
                                 </Button>
+                                <TextBlock Text="Music Library:" Margin="0,10,0,0" Foreground="White" />
+                                <StackPanel x:Name="LibraryTextStack" Orientation="Horizontal">
+                                    <TextBox x:Name="MusicLibraryText" Height="26" Width="250" Margin="2" TextChanged="TextBox_TextChanged" />
+                                    <Button x:Name="Refresh" Width="32" Height="32" Margin="2" ToolTip="Refresh Library" Content="↻" TextBlock.FontSize="18">
+                                        
+                                    </Button>
+                                </StackPanel>
                             </StackPanel>
                         </Border>
                     </Popup>
@@ -1040,6 +1052,7 @@
                                            FontWeight="SemiBold"
                                            VerticalAlignment="Center"
                                            Margin="20,-2,2,0"/>
+                                <RadioButton GroupName="SortType" Content="---" Foreground="White" Checked="RadioButton_Checked_0" Style="{StaticResource SortRadioButtonStyle}" />
                                 <RadioButton GroupName="SortType" Content="A-Z" Foreground="White" Checked="RadioButton_Checked" Style="{StaticResource SortRadioButtonStyle}" />
                                 <RadioButton GroupName="SortType" x:Name="TimeSortBtn" TextBlock.FontWeight="ExtraLight"  Content="🕒" Foreground="White" Checked="RadioButton_Checked_1" Style="{StaticResource SortRadioButtonStyle}" ToolTip="Time" />
                             </StackPanel>
@@ -1088,7 +1101,7 @@
 
 
                     </TabItem>
-                    <TabItem Header="Recent Playlists">
+                    <TabItem Header="Saved Playlists">
                         <ListBox x:Name="Playlists"  
                                  ScrollViewer.CanContentScroll="False"
                                  ScrollViewer.VerticalScrollBarVisibility="Auto"
