@@ -37,7 +37,6 @@ namespace DJCMS.ViewModels
 
         // Library folder watcher
         private FileSystemWatcher? _libraryWatcher;
-        private readonly string _libraryFolderPath = @"D:\Music\DJing\717_backup";
         private DateTime _lastLibraryReload = DateTime.MinValue;
 
         private Stack<string> History = new Stack<string>();
@@ -154,17 +153,24 @@ namespace DJCMS.ViewModels
                 // dispose existing watcher if any
                 _libraryWatcher?.Dispose();
 
-                _libraryWatcher = new FileSystemWatcher(_libraryFolderPath)
-                {
-                    NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName | NotifyFilters.LastWrite,
-                    IncludeSubdirectories = false,
-                    EnableRaisingEvents = true
-                };
+                var _libraryFolderPath = _settings.MusicLibrary;
 
-                _libraryWatcher.Created += OnLibraryChanged;
-                _libraryWatcher.Deleted += OnLibraryChanged;
-                _libraryWatcher.Changed += OnLibraryChanged;
-                _libraryWatcher.Renamed += OnLibraryRenamed;
+                if (Path.Exists(_libraryFolderPath))
+                {
+                    _libraryWatcher = new FileSystemWatcher(_libraryFolderPath)
+                    {
+                        NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName | NotifyFilters.LastWrite,
+                        IncludeSubdirectories = false,
+                        EnableRaisingEvents = true
+                    };
+
+                    _libraryWatcher.Created += OnLibraryChanged;
+                    _libraryWatcher.Deleted += OnLibraryChanged;
+                    _libraryWatcher.Changed += OnLibraryChanged;
+                    _libraryWatcher.Renamed += OnLibraryRenamed;
+                }
+
+                
             }
             catch (Exception ex)
             {
@@ -204,7 +210,7 @@ namespace DJCMS.ViewModels
             {
                 try
                 {
-                    LoadLibraryFolder(_libraryFolderPath);
+                    LoadLibraryFolder();
                 }
                 catch { }
             }));
@@ -799,6 +805,27 @@ namespace DJCMS.ViewModels
             }
         }
 
+        public void PinPlaylist(Guid playlistId)
+        {
+            var Xplaylist = GetPlaylistFromId(playlistId);
+            _settings.PinnedPlaylist = Xplaylist.FilePath;
+            SaveSettings();
+        }
+
+        public void RemovePlaylist(Guid playlistId)
+        {
+            var Xplaylist = GetPlaylistFromId(playlistId);
+            if (File.Exists(Xplaylist.FilePath))
+            {
+                try
+                {
+                    File.Delete(Xplaylist.FilePath);
+                    LoadPlaylistsFolder();
+                }
+                catch {  }
+            }
+        }
+
         public void RemoveTrack(Guid trackId)
         {
             var track = GetListTrack(trackId);
@@ -1178,31 +1205,25 @@ namespace DJCMS.ViewModels
 
         private async void AutoLoad()
         {
-            /*
-            var supportedExtensions = new[] { ".mp3", ".wav", ".m4a", ".flac", ".aac", ".wma", ".ogg" };
-           
+            //tracks
+            if (Path.Exists(_settings.PinnedPlaylist))
+            {
+                var supportedExtensions = new[] { ".mp3", ".wav", ".m4a", ".flac", ".aac", ".wma", ".ogg" };
+                Tracks = await LoadPlaylistFile(_settings.PinnedPlaylist);
+                NotifyOfChangeAsyncDelay(nameof(PlaylistTime));
+            }
+                
 
             //library
-            LoadLibraryFolder(_libraryFolderPath);
-
-            //tracks
-            Tracks = await LoadPlaylistFile($"{localAppData}\\July-17_exp.json");
-
-            //playlists
-            var fileArray1 = Directory.GetFiles(localAppData)
-               .Where(file => supportedPL_Extensions.Contains(Path.GetExtension(file).ToLowerInvariant()))
-               .OrderBy(file => file)
-               .ToArray();
-            LoadPlaylistFiles(fileArray1);
-
-            NotifyOfChangeAsyncDelay(nameof(PlaylistTime));
-
-            Action();
-            */
-
+            if (Path.Exists(_settings.MusicLibrary))
+            {
+                LoadLibraryFolder();
+            }
 
             //playlists
             LoadPlaylistsFolder();
+
+            Action();
         }
 
         public void LoadPlaylistsFolder()
@@ -1238,8 +1259,10 @@ namespace DJCMS.ViewModels
             NotifyOfChangeAsyncDelay(nameof(PlaylistTime));
         }
 
-        public void LoadLibraryFolder(string folderPath)
+        public void LoadLibraryFolder()
         {
+            var folderPath = _settings.MusicLibrary;
+
             if (!Directory.Exists(folderPath))
                 return;
             var supportedExtensions = new[] { ".mp3", ".wav", ".m4a", ".flac", ".aac", ".wma", ".ogg" };
@@ -1632,7 +1655,7 @@ namespace DJCMS.ViewModels
 
         public void Sort0()
         {
-            LoadLibraryFolder(_libraryFolderPath);
+            LoadLibraryFolder();
         }
 
         public void Sort1()
@@ -1649,6 +1672,24 @@ namespace DJCMS.ViewModels
         {
             _settings.MusicLibrary = text;
             SaveSettings();
+        }
+
+        internal string? GetMusicLibraryText()
+        {
+            return _settings.MusicLibrary;
+        }
+
+        internal bool GetIsPlaylistChecked(Guid id)
+        {
+            var playlist = GetPlaylistFromId(id);
+            if (playlist != null)
+            {
+                if (playlist.FilePath.ToString().Equals(_settings.PinnedPlaylist.ToString(), StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

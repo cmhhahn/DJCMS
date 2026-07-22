@@ -77,6 +77,87 @@
         <SolidColorBrush x:Key="SpotifyTextBrush" Color="#FFFFFF"/>
         <SolidColorBrush x:Key="SpotifySecondaryTextBrush" Color="#B3B3B3"/>
 
+        <!-- Modern TextBox style for sleek dark input with accent-colored text -->
+        <Style x:Key="ModernTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Background" Value="{StaticResource ControlSurfaceBrush}" />
+            <Setter Property="Foreground" Value="{StaticResource SpotifyAccentColor}" />
+            <Setter Property="BorderBrush" Value="#2B2F33" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="5,1,5,5" />
+            <Setter Property="Height" Value="26" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="CaretBrush" Value="{StaticResource SpotifyAccentColor}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="0" VerticalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsKeyboardFocused" Value="True">
+                    <Setter Property="BorderBrush" Value="{StaticResource SpotifyAccentColor}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Pinned playlist RadioButton style: shows a thumbtack pin glyph (Segoe MDL2 Assets) -->
+        <Style x:Key="PinnedPlaylistRadioButtonStyle" TargetType="RadioButton">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Foreground" Value="Black" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                            <Viewbox Width="24" Height="24" Stretch="Uniform">
+                                <Canvas Width="100" Height="100">
+                                                                       <!-- point -->
+                                    <Polygon Points="
+        74.7,15.9
+        66.8,14.8
+        60.5,18.1
+        57.4,24.6
+        58.4,31.2
+        47.9,42.9
+        34.4,42.1
+        27.7,46.0
+        27.0,53.5
+        35.3,63.7
+        16.2,87.3
+        15.5,91.2
+        17.1,94.0
+        22.0,94.0
+        45.9,72.4
+        55.1,82.4
+        58.9,83.2
+        62.2,82.1
+        66.3,74.1
+        65.6,62.4
+        77.6,51.2
+        84.6,52.2
+        90.5,48.2
+        92.8,43.0
+        91.4,35.6" Fill="{TemplateBinding Foreground}" />
+                                </Canvas>
+                            </Viewbox>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <!-- when checked, change the Foreground (shapes bind to Foreground) -->
+                                <Setter Property="Foreground" Value="{StaticResource SpotifyAccentColor}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <!-- tab control styles -->
         <Style 
                TargetType="TabItem">
@@ -992,10 +1073,8 @@
                                 </Button>
                                 <TextBlock Text="Music Library:" Margin="0,10,0,0" Foreground="White" />
                                 <StackPanel x:Name="LibraryTextStack" Orientation="Horizontal">
-                                    <TextBox x:Name="MusicLibraryText" Height="26" Width="250" Margin="2" TextChanged="TextBox_TextChanged" />
-                                    <Button x:Name="Refresh" Width="32" Height="32" Margin="2" ToolTip="Refresh Library" Content="↻" TextBlock.FontSize="18">
-                                        
-                                    </Button>
+                                    <TextBox x:Name="MusicLibraryText" Width="250" Margin="2" TextChanged="TextBox_TextChanged" Style="{StaticResource ModernTextBoxStyle}" />
+                                    <Button x:Name="Refresh" Width="32" Height="32" Margin="3,0,0,0" ToolTip="Refresh Library" Content="↻" TextBlock.FontSize="17" Click="Refresh_Click" />
                                 </StackPanel>
                             </StackPanel>
                         </Border>
@@ -1126,18 +1205,41 @@
                                                 </cal:ActionMessage>
                                             </i:EventTrigger>
                                         </i:Interaction.Triggers>
-                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
-                                            <Image Source="{Binding Thumbnail}"
-                                                   Width="30"
-                                                   Height="30"
-                                                   Margin="8,4,10,4" />
-                                            <StackPanel>
-                                                <TextBlock Text="{Binding FileName}"
-                                                           FontSize="18" VerticalAlignment="Center"
-                                                           FontWeight="SemiBold"
-                                                           Foreground="{StaticResource PlaylistTextBrush}"/>
+                                        <Grid>
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
+                                                <Image Source="{Binding Thumbnail}"
+                                                       Width="30"
+                                                       Height="30"
+                                                       Margin="8,4,10,4" />                                            
+                                                    <TextBlock Text="{Binding FileName}"
+                                                               FontSize="18" VerticalAlignment="Center"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="{StaticResource PlaylistTextBrush}"/>
+                                            
                                             </StackPanel>
-                                        </StackPanel>
+
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                                <RadioButton GroupName="PinnedPlaylistGroup" Margin="4,0,4,0" VerticalAlignment="Center" Style="{StaticResource PinnedPlaylistRadioButtonStyle}" Tag="{Binding ID}" Loaded="RadioButton_Loaded">
+                                                    <i:Interaction.Triggers>
+                                                        <i:EventTrigger EventName="Checked">
+                                                            <cal:ActionMessage MethodName="PinPlaylist">
+                                                                <cal:Parameter Value="{Binding ID}" />
+                                                            </cal:ActionMessage>
+                                                        </i:EventTrigger>
+                                                    </i:Interaction.Triggers>
+                                                </RadioButton>
+                                                <Button x:Name="RemovePlaylistButton" Content="⨉" Height="28" Margin="4,0,4,0" >
+                                                    <i:Interaction.Triggers>
+                                                        <i:EventTrigger EventName="Click">
+                                                            <cal:ActionMessage MethodName="RemovePlaylist">
+                                                                <cal:Parameter Value="{Binding ID}" />
+                                                            </cal:ActionMessage>
+                                                        </i:EventTrigger>
+                                                    </i:Interaction.Triggers>
+                                                </Button>
+                                            </StackPanel>
+                                        </Grid>
+                                        
                                     </Grid>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>

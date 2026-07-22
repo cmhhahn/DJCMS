@@ -47,6 +47,8 @@ namespace DJCMS.Views
             // Attach ScrollChanged event to both ListBoxes
             AttachScrollChangedHandler(Library);
             AttachScrollChangedHandler(Tracks);
+
+            MusicLibraryText.Text = (this.DataContext as MainWindowViewModel)?.GetMusicLibraryText()??"";
         }
 
         private void AttachScrollChangedHandler(ListBox? listBox)
@@ -835,6 +837,21 @@ namespace DJCMS.Views
         private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             (this.DataContext as MainWindowViewModel)?.SaveLibrarySetting(MusicLibraryText.Text);
+        }
+
+        private void Refresh_Click(object sender, RoutedEventArgs e)
+        {
+            (this.DataContext as MainWindowViewModel)?.LoadLibraryFolder();
+        }
+
+        private void RadioButton_Loaded(object sender, RoutedEventArgs e)
+        {
+            var id = ((sender as System.Windows.Controls.RadioButton)?.Tag as Guid?)??(new Guid());
+            bool CheckMe = (this.DataContext as MainWindowViewModel)?.GetIsPlaylistChecked(id) ?? false;
+            if (CheckMe)
+            {
+                (sender as System.Windows.Controls.RadioButton)?.IsChecked = true;
+            }
         }
     }
 }
