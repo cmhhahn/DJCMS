@@ -812,6 +812,24 @@ namespace DJCMS.ViewModels
             SaveSettings();
         }
 
+        // Ask the user to confirm before deleting a playlist. Shows the playlist name in the modal.
+        public void ConfirmRemovePlaylist(Guid playlistId, string playlistName)
+        {
+            try
+            {
+                var msg = $"Are you sure you want to delete the playlist '{playlistName}' from your playlist library?";
+                var result = MessageBox.Show(msg, "Confirm Delete Playlist", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                if (result == MessageBoxResult.Yes)
+                {
+                    RemovePlaylist(playlistId);
+                }
+            }
+            catch
+            {
+                // ignore any UI exceptions
+            }
+        }
+
         public void RemovePlaylist(Guid playlistId)
         {
             var Xplaylist = GetPlaylistFromId(playlistId);

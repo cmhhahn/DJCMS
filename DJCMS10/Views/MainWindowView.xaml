@@ -1231,8 +1231,10 @@
                                                 <Button x:Name="RemovePlaylistButton" Content="⨉" Height="28" Margin="4,0,4,0" >
                                                     <i:Interaction.Triggers>
                                                         <i:EventTrigger EventName="Click">
-                                                            <cal:ActionMessage MethodName="RemovePlaylist">
+                                                            <!-- Show a confirmation modal before deleting. Pass both the ID and the display name. -->
+                                                            <cal:ActionMessage MethodName="ConfirmRemovePlaylist">
                                                                 <cal:Parameter Value="{Binding ID}" />
+                                                                <cal:Parameter Value="{Binding FileName}" />
                                                             </cal:ActionMessage>
                                                         </i:EventTrigger>
                                                     </i:Interaction.Triggers>
