@@ -817,16 +817,22 @@ namespace DJCMS.ViewModels
         {
             try
             {
-                var msg = $"Are you sure you want to delete the playlist '{playlistName}' from your playlist library?";
-                var result = MessageBox.Show(msg, "Confirm Delete Playlist", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-                if (result == MessageBoxResult.Yes)
+                // Use a custom dark-themed confirm dialog instead of the system MessageBox
+                var dialog = new DJCMS.Views.ConfirmDialog(playlistName);
+                if (Application.Current?.MainWindow != null)
+                {
+                    dialog.Owner = Application.Current.MainWindow;
+                }
+
+                var result = dialog.ShowDialog();
+                if (result == true)
                 {
                     RemovePlaylist(playlistId);
                 }
             }
             catch
             {
-                // ignore any UI exceptions
+                // ignore UI exceptions
             }
         }
 

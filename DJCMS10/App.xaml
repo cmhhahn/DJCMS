@@ -4,6 +4,9 @@
              xmlns:local="clr-namespace:DJCMS">
     <Application.Resources>
         <ResourceDictionary>
+            <!-- Make the app-level dark accent color available to all windows (including ConfirmDialog) -->
+            <Color x:Key="DarkAccentColor">#FF1b4d75</Color>
+
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary>
                     <local:Bootstrapper x:Key="Bootstrapper" />
