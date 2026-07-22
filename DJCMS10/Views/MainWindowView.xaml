@@ -60,8 +60,10 @@
             <GradientStop Color="#26282A" Offset="1"/>
         </LinearGradientBrush>
 
-        <SolidColorBrush x:Key="PlaylistItemBrushX"
-                   Color="#26282A"/>
+        <LinearGradientBrush x:Key="PlaylistItemBrushX" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#26282A" Offset="0"/>
+            <GradientStop Color="#131415" Offset="1"/>
+        </LinearGradientBrush>
 
         <SolidColorBrush x:Key="PlaylistHoverBrush"
                    Color="#31363E"/>
@@ -1554,7 +1556,7 @@
                        StaysOpen="False"
                        AllowsTransparency="True"
                        PopupAnimation="Slide">
-                    <Border Background="{StaticResource PlaylistItemBrush}"
+                    <Border Background="{StaticResource PlaylistItemBrushX}"
                             CornerRadius="6"
                             Padding="12"
                             BorderBrush="{StaticResource SpotifyAccentColor}"
