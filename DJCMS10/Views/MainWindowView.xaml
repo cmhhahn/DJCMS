@@ -47,6 +47,8 @@
         <SolidColorBrush x:Key="PlaylistBackgroundBrush"
                    Color="#111213"/>
 
+        <SolidColorBrush x:Key="PlaylistBackgroundBrushX"
+           Color="#0A0B0C"/>
 
         <LinearGradientBrush x:Key="PlaylistItemBrush" StartPoint="0,0" EndPoint="0,1">
             <GradientStop Color="#FF26282A" Offset="0"/>
@@ -714,7 +716,7 @@
                     <Style x:Key="DarkPlaylistListBoxStyle"
                            TargetType="ListBox">
                         <Setter Property="Background"
-                                Value="{StaticResource PlaylistBackgroundBrush}"/>
+                                Value="{StaticResource PlaylistBackgroundBrushX}"/>
                         <Setter Property="BorderThickness"
                                 Value="0"/>
                         <Setter Property="Foreground"
@@ -1276,7 +1278,7 @@
                          ScrollViewer.CanContentScroll="False"
                          ScrollViewer.VerticalScrollBarVisibility="Visible"
                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                         Margin="0,10,10,10" Grid.Column="2"
+                         Margin="0,7,10,3" Grid.Column="2"
                          SelectedItem="{Binding SelectedTrack}"
                          ItemContainerStyle="{StaticResource DarkPlaylistItemStyle}"
                          Style="{StaticResource DarkPlaylistListBoxStyle}"

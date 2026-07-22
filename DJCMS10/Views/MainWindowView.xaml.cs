@@ -509,7 +509,7 @@ namespace DJCMS.Views
             }
 
             bool hasValidData = false;
-            DragDropEffects effect = DragDropEffects.None;
+            DragDropEffects effect = DragDropEffects.Scroll;
 
             if (sender is ListBoxItem targetItem && targetItem != _draggedItem)
             {
@@ -579,6 +579,7 @@ namespace DJCMS.Views
             {
                 var files = new string[] { droppedTrack.FilePath };
                 HandleDroppedFiles(files, sender, vm);
+                e.Handled = true;
                 return;
             }
 
@@ -690,10 +691,10 @@ namespace DJCMS.Views
             }
             else
             {
-                e.Effects = DragDropEffects.None;
+                e.Effects = DragDropEffects.Copy;
             }
 
-            e.Handled = true;
+            //e.Handled = true;
         }
 
         private void ListBox_Drop(object sender, DragEventArgs e)
@@ -708,6 +709,12 @@ namespace DJCMS.Views
             {
                 var files = (string[])e.Data.GetData(DataFormats.FileDrop);
                 viewModel.LoadFiles(files);
+                e.Handled = true;
+            }
+            else if (e.Data.GetData(typeof(PlaylistTrack)) is PlaylistTrack droppy && DataContext is MainWindowViewModel viewModel2)
+            {
+                var files2 = new string[] { droppy.FilePath };
+                viewModel2.LoadFiles(files2);
             }
 
             e.Handled = true;
