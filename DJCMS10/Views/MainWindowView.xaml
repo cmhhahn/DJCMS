@@ -1390,7 +1390,7 @@
                Foreground="White"
                Margin="0,0,20,0" />
 
-                                            <Button Content="   " Margin="0,0,20,0">
+                                            <Button TextBlock.Foreground="SlateGray" Content="↻" TextBlock.FontSize="17" Margin="0,0,20,0">
                                                 <i:Interaction.Triggers>
                                                     <i:EventTrigger EventName="Click">
                                                         <cal:ActionMessage MethodName="ReGenTrack">
