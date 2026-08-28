@@ -35,13 +35,20 @@ namespace DJCMS.Models
                 _filePath = value;
                 _cachedDuration = null; // Invalidate cache
 
-                using var file = TagLib.File.Create(FilePath);
+                try
+                {
+                    using var file = TagLib.File.Create(FilePath);
 
-                Title = file.Tag.Title;
-                Artist = string.Join(',', file.Tag.Performers);
+                    Title = file.Tag.Title;
+                    Artist = string.Join(',', file.Tag.Performers);
 
-                TimeSpan duration = file.Properties.Duration;
-                TotalSeconds = (int)duration.TotalSeconds;
+                    TimeSpan duration = file.Properties.Duration;
+                    TotalSeconds = (int)duration.TotalSeconds;
+                }
+                catch
+                {
+                    Title = FileName;
+                }               
 
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(FileName));
