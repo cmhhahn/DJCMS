@@ -1727,7 +1727,7 @@ namespace DJCMS.ViewModels
             var playlist = GetPlaylistFromId(id);
             if (playlist != null)
             {
-                if (playlist.FilePath.ToString().Equals(_settings.PinnedPlaylist.ToString(), StringComparison.OrdinalIgnoreCase))
+                if (_settings.PinnedPlaylist != null && playlist.FilePath.ToString().Equals(_settings.PinnedPlaylist.ToString(), StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
