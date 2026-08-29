@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
+using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
@@ -47,13 +48,37 @@ namespace DJCMS.Models
                 }
                 catch
                 {
-                    Title = FileName;
-                    using var reader = new NAudio.Wave.AudioFileReader(FilePath);
-                    var totalSeconds = (int)reader.TotalTime.TotalSeconds;
-                    TotalSeconds = totalSeconds;
-                    reader.Close();
-                    reader.Dispose();
-                }               
+                    // TagLib failed; try a simpler reader. If that also fails, show an error dialog
+                    try
+                    {
+                        Title = FileName;
+                        using var reader = new NAudio.Wave.AudioFileReader(FilePath);
+                        var totalSeconds = (int)reader.TotalTime.TotalSeconds;
+                        TotalSeconds = totalSeconds;
+                        reader.Close();
+                        reader.Dispose();
+                    }
+                    catch (Exception ex)
+                    {
+                        // Show a simple error dialog similar to ConfirmDialog
+                        try
+                        {
+                            var message = $"Cannot open this file in the application:\n{Path.GetFileName(FilePath)}\n\n{ex.Message}";
+                            Application.Current?.Dispatcher?.Invoke(() =>
+                            {
+                                var dlg = new DJCMS.Views.ErrorDialog(message);
+                                dlg.Owner = Application.Current?.MainWindow;
+                                dlg.ShowDialog();
+                            });
+                        }
+                        catch
+                        {
+                            // If showing the dialog fails for any reason, swallow to avoid crash
+                        }
+
+                        throw;
+                    }
+                }
 
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(FileName));

@@ -1,0 +1,57 @@
+<Window x:Class="DJCMS.Views.ErrorDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Error" Height="180" Width="460"
+        WindowStartupLocation="CenterOwner"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ShowInTaskbar="False"
+        ResizeMode="NoResize">
+
+    <Window.Resources>
+        <SolidColorBrush x:Key="DialogAccentBrush" Color="{DynamicResource DarkAccentColor}" />
+        <SolidColorBrush x:Key="DialogCancelBrush" Color="#2B2F33" />
+        <Style x:Key="PrimaryDialogButton" TargetType="Button">
+            <Setter Property="Background" Value="#D9534F" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderBrush" Value="#B23B36" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="6,2" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="6,0" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Border CornerRadius="8" Padding="16" BorderBrush="#222" BorderThickness="1">
+        <Border.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                <GradientStop Color="#26282A" Offset="0"/>
+                <GradientStop Color="#121213" Offset="1"/>
+            </LinearGradientBrush>
+        </Border.Background>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Text="Cannot Open File" FontSize="18" FontWeight="SemiBold" Foreground="#EEF6FA" />
+
+            <TextBlock Grid.Row="1" x:Name="MessageText" TextWrapping="Wrap" Margin="0,8,0,0" Foreground="#B3B3B3" />
+
+            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+                <Button Width="90" Height="30" Content="OK" Style="{StaticResource PrimaryDialogButton}" Click="OkButton_Click" />
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>
