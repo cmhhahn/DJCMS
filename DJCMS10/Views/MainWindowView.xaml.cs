@@ -1,7 +1,6 @@
 using DJCMS.Models;
 using DJCMS.ViewModels;
 using DJCMS10.Utilities;
-using System.Runtime.Intrinsics.Arm;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;

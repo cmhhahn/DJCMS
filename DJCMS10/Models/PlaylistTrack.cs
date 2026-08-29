@@ -48,6 +48,11 @@ namespace DJCMS.Models
                 catch
                 {
                     Title = FileName;
+                    using var reader = new NAudio.Wave.AudioFileReader(FilePath);
+                    var totalSeconds = (int)reader.TotalTime.TotalSeconds;
+                    TotalSeconds = totalSeconds;
+                    reader.Close();
+                    reader.Dispose();
                 }               
 
                 OnPropertyChanged();
