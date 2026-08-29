@@ -1254,16 +1254,36 @@ namespace DJCMS.ViewModels
 
         public void LoadPlaylistsFolder()
         {
-            var playlistsFolder = Path.Combine(localAppData, "Playlists");
+            // Prefer playlists saved in settings.json (user-picked locations)
+            try
+            {
+                if (_settings?.Playlists != null && _settings.Playlists.Any())
+                {
+                    var files = _settings.Playlists
+                        .Where(file => !string.IsNullOrWhiteSpace(file) && File.Exists(file))
+                        .OrderBy(file => file)
+                        .ToArray();
 
-            if (!Directory.Exists(playlistsFolder))
-                return;
-            var supportedExtensions = new[] { ".json" };
-            var files = Directory.GetFiles(playlistsFolder)
-                .Where(file => supportedExtensions.Contains(Path.GetExtension(file).ToLowerInvariant()))
-                .OrderBy(file => file)
-                .ToArray();
-            LoadPlaylistFiles(files);
+                    LoadPlaylistFiles(files);
+                    return;
+                }
+
+                // Fallback: load playlists from the application's Playlists folder in LocalAppData
+                var playlistsFolder = Path.Combine(localAppData, "Playlists");
+
+                if (!Directory.Exists(playlistsFolder))
+                    return;
+                var supportedExtensions = new[] { ".json" };
+                var filesFromFolder = Directory.GetFiles(playlistsFolder)
+                    .Where(file => supportedExtensions.Contains(Path.GetExtension(file).ToLowerInvariant()))
+                    .OrderBy(file => file)
+                    .ToArray();
+                LoadPlaylistFiles(filesFromFolder);
+            }
+            catch
+            {
+                // swallow any errors while loading playlist list
+            }
         }
 
         public void LoadPlaylistFiles(string[] files)
@@ -1392,7 +1412,7 @@ namespace DJCMS.ViewModels
             NotifyOfChangeAsyncDelay(nameof(PlaylistTime));
         }
 
-        public static async Task SavePlaylistAsync(
+        public async Task SavePlaylistAsync(
     ObservableCollection<PlaylistTrack> tracks)
         {
             var dialog = new SaveFileDialog
@@ -1422,6 +1442,22 @@ namespace DJCMS.ViewModels
             {
                 try { MessageBox.Show($"Unable to save playlist: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error); } catch { }
             }
+            // Persist the saved playlist path in settings so LoadPlaylistsFolder can find it
+            try
+            {
+                if (_settings != null)
+                {
+                    if (_settings.Playlists == null)
+                        _settings.Playlists = new List<string>();
+
+                    if (!string.IsNullOrWhiteSpace(dialog.FileName) && !_settings.Playlists.Contains(dialog.FileName, StringComparer.OrdinalIgnoreCase))
+                    {
+                        _settings.Playlists.Add(dialog.FileName);
+                        SaveSettings();
+                    }
+                }
+            }
+            catch { }
         }
 
         public static async Task<ObservableCollection<PlaylistTrack>?> LoadPlaylistAsync()
