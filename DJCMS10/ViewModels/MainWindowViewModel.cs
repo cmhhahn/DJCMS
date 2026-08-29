@@ -765,7 +765,9 @@ namespace DJCMS.ViewModels
             var track = GetLibraryTrack(trackId);
             if (track != null)
             {
-                Tracks.Add(track);
+                // Clone the library track so the playlist gets its own instance with a unique ID
+                var cloned = CloneLibraryTrack(track);
+                Tracks.Add(cloned);
                 NotifyOfChangeAsyncDelay(nameof(PlaylistTime));
 
                 Action();
@@ -1333,6 +1335,23 @@ namespace DJCMS.ViewModels
         private PlaylistTrack? GetLibraryTrack(Guid id)
         {
             return LibraryFolder?.FirstOrDefault(t => t.ID == id);
+        }
+
+        // Create a clone of a library track so adding it to the playlist uses a unique ID
+        // and does not reuse the same instance from the LibraryFolder collection.
+        private PlaylistTrack CloneLibraryTrack(PlaylistTrack src)
+        {
+            if (src == null) throw new ArgumentNullException(nameof(src));
+
+            // Create a new PlaylistTrack with the same file and settings but a new ID
+            var clone = new PlaylistTrack
+            {
+                FilePath = src.FilePath,
+                GapSeconds = src.GapSeconds,
+                FadeInOnCross = src.FadeInOnCross
+            };
+
+            return clone;
         }
 
         // TODO: Implement saving/loading playlists. Wired to the view via Caliburn Micro actions.
