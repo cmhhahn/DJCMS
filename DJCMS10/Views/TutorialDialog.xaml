@@ -1,0 +1,67 @@
+<Window x:Class="DJCMS.Views.TutorialDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Welcome" Height="220" Width="520"
+        WindowStartupLocation="CenterOwner"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ShowInTaskbar="False"
+        ResizeMode="NoResize">
+
+    <Window.Resources>
+        <SolidColorBrush x:Key="DialogAccentBrush" Color="{DynamicResource DarkAccentColor}" />
+        <SolidColorBrush x:Key="DialogAccentBorderBrush" Color="{DynamicResource DarkAccentColor}" Opacity="0.95" />
+        <SolidColorBrush x:Key="DialogCancelBrush" Color="#2B2F33" />
+        <Style x:Key="PrimaryDialogButton" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource DialogAccentBrush}" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderBrush" Value="{StaticResource DialogAccentBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="6,2" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style x:Key="CancelDialogButton" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource DialogCancelBrush}" />
+            <Setter Property="Foreground" Value="#EEF6FA" />
+            <Setter Property="BorderBrush" Value="#333" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="6,2" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+    </Window.Resources>
+
+    <Border CornerRadius="8" Padding="16" BorderBrush="#222" BorderThickness="1">
+        <Border.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                <GradientStop Color="#26282A" Offset="0"/>
+                <GradientStop Color="#121213" Offset="1"/>
+            </LinearGradientBrush>
+        </Border.Background>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Text="Welcome to DJCMS" FontSize="20" Opacity="0.85" FontWeight="SemiBold" Foreground="#EEF6FA" />
+
+            <TextBlock Grid.Row="1" TextWrapping="Wrap" Margin="0,8,0,0" Foreground="#B3B3B3">
+                Please select the folder where your main music library is stored. DJCMS will scan this folder for audio files and add them to the library.
+            </TextBlock>
+
+            <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,12,0,0">
+                <TextBox x:Name="PathTextBox" Width="360" Height="28" />
+                <Button x:Name="BrowseButton" Width="80" Height="28" Margin="8,0,0,0" Content="Browse..." Click="BrowseButton_Click" />
+            </StackPanel>
+
+            <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+                <Button x:Name="CancelButton" Width="90" Height="30" Margin="0,0,8,0" Content="Skip" Style="{StaticResource CancelDialogButton}" Click="CancelButton_Click" />
+                <Button x:Name="OkButton" Width="90" Height="30" Content="Set" Style="{StaticResource PrimaryDialogButton}" Click="OkButton_Click" />
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

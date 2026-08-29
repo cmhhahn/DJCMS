@@ -364,19 +364,28 @@ namespace DJCMS.ViewModels
             {
                 Directory.CreateDirectory(localAppData);
                 var path = Path.Combine(localAppData, "settings.json");
+
+                // If settings file doesn't exist, return a new settings instance and mark it as new
                 if (!File.Exists(path))
-                    throw new Exception();
+                {
+                    return new Settings() { Volume = 0.5, IsNew = true };
+                }
 
                 var json = File.ReadAllText(path);
                 var settings = JsonSerializer.Deserialize<Settings>(json);
                 if (settings == null)
-                    throw new Exception();
+                    throw new Exception("Failed to deserialize settings.json");
+
+                // Ensure a sane default for volume if not present
+                if (settings.Volume == 0)
+                    settings.Volume = 0.5;
 
                 return settings;
-
             }
             catch (Exception ex)
             {
+                // On any error reading/parsing settings, log and return defaults
+                try { Log.Logger?.ForContext<MainWindowViewModel>()?.Warning("Failed to load settings: {Message}", ex.Message); } catch { }
                 return new Settings() { Volume = 0.5 };
             }
         }
@@ -1240,11 +1249,52 @@ namespace DJCMS.ViewModels
             }
                 
 
-            //library
-            if (Path.Exists(_settings.MusicLibrary))
+            // library - if user hasn't set a music library yet (first run) prompt for one
+            try
             {
-                LoadLibraryFolder();
+                if (string.IsNullOrWhiteSpace(_settings.MusicLibrary) || _settings.IsNew)
+                {
+                    // Show the tutorial dialog after the main window has initialized to avoid
+                    // blocking window creation. Use the dispatcher at ApplicationIdle so the
+                    // dialog won't cause the app to exit unexpectedly.
+                    Application.Current?.Dispatcher?.BeginInvoke(new System.Action(() =>
+                    {
+                        try
+                        {
+                            var tutorial = new DJCMS.Views.TutorialDialog();
+                            if (Application.Current?.MainWindow != null)
+                                tutorial.Owner = Application.Current.MainWindow;
+
+                            var result = tutorial.ShowDialog();
+                            if (result == true && !string.IsNullOrWhiteSpace(tutorial.SelectedPath))
+                            {
+                                _settings.MusicLibrary = tutorial.SelectedPath;
+                                _settings.IsNew = false;
+                                // Queue the normal debounced save
+                                SaveSettings();
+                                // Also write settings synchronously to ensure persistence in case the app closes
+                                try
+                                {
+                                    Directory.CreateDirectory(localAppData);
+                                    var options = new JsonSerializerOptions { WriteIndented = true };
+                                    var json = JsonSerializer.Serialize(_settings, options);
+                                    File.WriteAllText(Path.Combine(localAppData, "settings.json"), json);
+                                }
+                                catch { }
+
+                                LoadLibraryFolder();
+                            }
+                        }
+                        catch { }
+                    }), System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+                }
+                else
+                {
+                    if (Path.Exists(_settings.MusicLibrary))
+                        LoadLibraryFolder();
+                }
             }
+            catch { }
 
             //playlists
             LoadPlaylistsFolder();
