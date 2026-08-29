@@ -692,6 +692,26 @@ namespace DJCMS.Views
                 return;
             }
 
+            // Allow dropping external files on empty space in the ListBox
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                e.Effects = DragDropEffects.Copy;
+            }
+            else
+            {
+                e.Effects = DragDropEffects.Copy;
+            }
+
+            //e.Handled = true;
+        }
+        /*
+        private void ListBox_DragOver(object sender, DragEventArgs e)
+        {
+            if (_dragBlock)
+            {
+                return;
+            }
+
             // Determine if the dragged data is a PlaylistTrack (internal) or file(s) (external)
             bool isPlaylistTrack = e.Data.GetData(typeof(PlaylistTrack)) is PlaylistTrack;
             bool isFileDrop = e.Data.GetDataPresent(DataFormats.FileDrop);
@@ -720,26 +740,7 @@ namespace DJCMS.Views
 
             e.Handled = true;
         }
-
-        void ShowTracksOverlay()
-        {
-            /*
-            if (TracksOverlay != null)
-            {
-                TracksOverlay.Visibility = Visibility.Visible;
-            }
-            */
-        }
-
-        void HideTracksOverlay()
-        {
-            /*
-            if (TracksOverlay != null)
-            {
-                TracksOverlay.Visibility = Visibility.Collapsed;
-            }
-            */
-        }
+        */
 
         private void ListBox_Drop(object sender, DragEventArgs e)
         {
