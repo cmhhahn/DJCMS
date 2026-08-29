@@ -378,13 +378,22 @@ namespace DJCMS.Views
             }
         }
 
+        bool equalizerPopupcooldown = false;
+
         private void EqualizerButton_Click(object sender, RoutedEventArgs e)
         {
             // Toggle the equalizer popup
-            if (EqualizerPopup != null)
+            if (EqualizerPopup != null && !equalizerPopupcooldown)
             {
                 EqualizerPopup.IsOpen = !EqualizerPopup.IsOpen;
             }
+        }
+
+        private async void EqualizerPopup_Closed(object sender, EventArgs e)
+        {
+            equalizerPopupcooldown = true;
+            await Task.Delay(100); // Cooldown period
+            equalizerPopupcooldown = false;
         }
 
         private void EnterFullScreen()

@@ -1575,7 +1575,7 @@
                        Placement="Top"
                        StaysOpen="False"
                        AllowsTransparency="True"
-                       PopupAnimation="Slide">
+                       PopupAnimation="Slide" Closed="EqualizerPopup_Closed">
                     <Border Background="{StaticResource PlaylistItemBrushX}"
                             CornerRadius="6"
                             Padding="12"
