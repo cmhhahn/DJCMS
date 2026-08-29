@@ -368,13 +368,22 @@ namespace DJCMS.Views
             }
         }
 
+        bool menuPopupCooldown = false;
+
         private void MenuButton_Click(object sender, RoutedEventArgs e)
         {
             // Toggle the custom popup menu instead of using the system context menu
-            if (MenuPopup != null)
+            if (MenuPopup != null && !menuPopupCooldown)
             {
                 MenuPopup.IsOpen = !MenuPopup.IsOpen;
             }
+        }
+
+        private async void MenuPopup_Closed(object sender, EventArgs e)
+        {
+            menuPopupCooldown = true;
+            await Task.Delay(100); // Cooldown period
+            menuPopupCooldown = false;
         }
 
         bool equalizerPopupcooldown = false;

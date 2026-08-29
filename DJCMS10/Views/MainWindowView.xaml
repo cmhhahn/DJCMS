@@ -1074,7 +1074,7 @@
                     </Button>
 
                     <!-- App-styled popup menu that replaces the system context menu -->
-                    <Popup x:Name="MenuPopup"
+                    <Popup x:Name="MenuPopup" Closed="MenuPopup_Closed"
                            PlacementTarget="{Binding ElementName=MenuButton}"
                            Placement="Bottom"
                            StaysOpen="False"
