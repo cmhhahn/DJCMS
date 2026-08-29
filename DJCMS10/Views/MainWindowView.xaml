@@ -534,9 +534,16 @@
                                 <ControlTemplate TargetType="Slider">
                                     <Grid Background="Transparent">
                                         <Grid VerticalAlignment="Center">
+                                            
+                                            <Rectangle x:Name="ClippingRecto" Height="4"
+                                                       Margin="6,0,6,0"
+                                                       RadiusX="2"
+                                                       RadiusY="2"
+                                                       Fill="{StaticResource SpotifyTrackBrush}" />
+
                                             <Track x:Name="PART_Track">
                                                 <Track.IncreaseRepeatButton>
-                                                    <RepeatButton Focusable="False"
+                                                    <RepeatButton Focusable="False" Opacity="0.0"
                                                                   IsTabStop="False">
                                                         <RepeatButton.Template>
                                                             <ControlTemplate>
@@ -550,8 +557,11 @@
                                                 </Track.IncreaseRepeatButton>
 
                                                 <Track.DecreaseRepeatButton>
-                                                    <RepeatButton Focusable="False"
+                                                    <RepeatButton Focusable="False" Opacity="1"
                                                                   IsTabStop="False">
+                                                        <RepeatButton.Clip>
+                                                            <RectangleGeometry Rect="6,4,138,4" RadiusX="2" RadiusY="2" />
+                                                        </RepeatButton.Clip>
                                                         <RepeatButton.Template>
                                                             <ControlTemplate>
                                                                 <Border Height="4"
@@ -600,9 +610,16 @@
                                 <ControlTemplate TargetType="Slider">
                                     <Grid Background="Transparent">
                                         <Grid VerticalAlignment="Center">
+                                            
+                                            <Rectangle x:Name="ClippingRect" Height="4"
+                                                       Margin="6,0,6,0"
+                                                       RadiusX="2"
+                                                       RadiusY="2"
+                                                       Fill="{StaticResource SpotifyTrackBrush}" />
+
                                             <Track x:Name="PART_Track">
                                                 <Track.IncreaseRepeatButton>
-                                                    <RepeatButton Focusable="False"
+                                                    <RepeatButton Focusable="False" Opacity="0"
                                                                   IsTabStop="False">
                                                         <RepeatButton.Template>
                                                             <ControlTemplate>
@@ -618,6 +635,9 @@
                                                 <Track.DecreaseRepeatButton>
                                                     <RepeatButton Focusable="False"
                                                                   IsTabStop="False">
+                                                        <RepeatButton.Clip>
+                                                            <RectangleGeometry Rect="6,4,380,4" RadiusX="2" RadiusY="2" />
+                                                        </RepeatButton.Clip>
                                                         <RepeatButton.Template>
                                                             <ControlTemplate>
                                                                 <Border Height="4"
@@ -1777,8 +1797,8 @@
                         <Slider Style="{StaticResource SpotifySliderStyle}"
                                 Maximum="1.0"
                                 Value="{Binding TrackProgress, Mode=TwoWay}"
-                                Width="380"
-                                Margin="5"/>
+                                Width="392"
+                                Margin="-2,5"/>
 
                         <TextBlock Width="50" Text="{Binding TotalTime}" Foreground="Gray"  FontWeight="SemiBold" FontSize="14"
                                HorizontalAlignment="Center" Margin="0,0,12,0"
