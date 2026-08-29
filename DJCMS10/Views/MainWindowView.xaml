@@ -5,7 +5,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
         mc:Ignorable="d"
-       d:DesignHeight="400" d:DesignWidth="900"
+       d:DesignHeight="700" d:DesignWidth="1600"
         MinWidth="820"
 
         xmlns:local="clr-namespace:DJCMS.Models"
@@ -21,7 +21,7 @@
         
         FontFamily="Segoe UI"        
         
-        Title="DJCMS - DJ Content Management System - v1.34">
+        Title="DJCMS - DJ Content Management System - v1.36">
 
     <Window.Resources>
 
@@ -1048,7 +1048,7 @@
                     </LinearGradientBrush>
                 </Border.Background>
                 <Grid>
-                    <TextBlock Text="DJCMS - DJ Content Management System - v1.34"
+                    <TextBlock Text="DJCMS - DJ Content Management System - v1.36"
                                Foreground="White"
                                VerticalAlignment="Center"
                                HorizontalAlignment="Center"
@@ -1296,255 +1296,292 @@
                     </Thumb.Style>
                 </Thumb>
 
-                <ListBox x:Name="Tracks" AlternationCount="1000000"
-                         ScrollViewer.CanContentScroll="False"
-                         ScrollViewer.VerticalScrollBarVisibility="Visible"
-                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                         Margin="0,7,10,3" Grid.Column="2"
-                         SelectedItem="{Binding SelectedTrack}"
-                         ItemContainerStyle="{StaticResource DarkPlaylistItemStyle}"
-                         Style="{StaticResource DarkPlaylistListBoxStyle}"
-                         AllowDrop="True"
-                         Drop="ListBox_Drop"
-                         DragOver="ListBox_DragOver" Grid.ColumnSpan="2">
-                    <ListBox.Resources>
-                        <ResourceDictionary>
-                            <Style TargetType="ScrollBar" BasedOn="{StaticResource ModernScrollBar}"/>
-                        </ResourceDictionary>
-                    </ListBox.Resources>
-                    <ListBox.ItemTemplate>
+                <Grid Grid.Column="2" Grid.ColumnSpan="2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    
+                    <Border x:Name="PlayingTracksTitleBar"                        
+                        BorderBrush="Transparent" 
+                        Background="Transparent"
+                        Padding="4,0"  >
+                        
+                        <Grid VerticalAlignment="Bottom" Margin="4,0,32,-4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" MinWidth="400" />
+                                <ColumnDefinition Width="20" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="256"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <Rectangle Grid.ColumnSpan="4" Fill="White" Opacity="0.0" Height="24" VerticalAlignment="Top"/>
 
-                        <DataTemplate DataType="{x:Type local:PlaylistTrack}">
-                            <Border x:Name="PlayingTrackBorder"
-                                    BorderThickness="2"
-                                    BorderBrush="Transparent"
-                                    CornerRadius="6"
-                                    Background="Transparent"
-                                    Padding="0" Margin="-4">
-                                <i:Interaction.Triggers>
-                                    <i:EventTrigger EventName="MouseDown">
-                                        <cal:ActionMessage MethodName="ClickyPlayTrack">
-                                            <cal:Parameter Value="{Binding ID}" />
-                                        </cal:ActionMessage>
-                                    </i:EventTrigger>
-                                </i:Interaction.Triggers>
+                            <Grid Grid.Column="1" VerticalAlignment="Bottom" Grid.ColumnSpan="2">
+                                <TextBlock Text="Artist" FontSize="14" Margin="10,0,10,0"
+                                       Foreground="White" Opacity="0.6"
+                                       HorizontalAlignment="Left" FontWeight="Thin"/>
+                            </Grid>
 
-                                <Grid Margin="4">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" MinWidth="400" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="260"/>
-                                    </Grid.ColumnDefinitions>
+                            <Grid Grid.Column="3" VerticalAlignment="Bottom">
+                                <TextBlock Text="Duration" HorizontalAlignment="Left" FontSize="14" FontWeight="Thin" Opacity="0.6" Foreground="White" />
 
-                                    <StackPanel Orientation="Horizontal">
+                                <TextBlock Margin="116,0,0,0" Text="End Buffer" HorizontalAlignment="Left" FontSize="14" FontWeight="Thin" Opacity="0.6" Foreground="White" />
+                            </Grid>
+                        </Grid>
+                    </Border>
 
-                                        <Grid Height="25" Width="30" Margin="8,0,7,0" VerticalAlignment="Center" HorizontalAlignment="Left" >
-                                            <TextBlock x:Name="TrackNumberIndicator" Foreground="White" Opacity="0.7" FontSize="16"
-                                                HorizontalAlignment="Center" 
-                                                VerticalAlignment="Center" 
-                                                TextAlignment="Center"
-                                                Text="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=(ItemsControl.AlternationIndex), Converter={StaticResource AddOneConverter}}"  />
+                    <ListBox x:Name="Tracks" AlternationCount="1000000"
+                             ScrollViewer.CanContentScroll="False"
+                             ScrollViewer.VerticalScrollBarVisibility="Visible"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             Margin="0,7,10,3" Grid.Row="2"
+                             SelectedItem="{Binding SelectedTrack}"
+                             ItemContainerStyle="{StaticResource DarkPlaylistItemStyle}"
+                             Style="{StaticResource DarkPlaylistListBoxStyle}"
+                             AllowDrop="True"
+                             Drop="ListBox_Drop"
+                             DragOver="ListBox_DragOver">   
+                        <ListBox.Resources>
+                            <ResourceDictionary>
+                                <Style TargetType="ScrollBar" BasedOn="{StaticResource ModernScrollBar}"/>
+                            </ResourceDictionary>
+                        </ListBox.Resources>
+                        <ListBox.ItemTemplate>
 
-                                            <Viewbox RenderOptions.BitmapScalingMode="HighQuality" RenderOptions.EdgeMode="Unspecified" Margin="5,12,5,0" StretchDirection="Both" Stretch="Fill" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                                                <!-- Playing indicator (hidden by default). Shows animated bars when this track is the current playing track -->
-                                                <Grid x:Name="PlayingIndicator" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Height="20">
-                                                        <Rectangle x:Name="bar1" Width="2" Height="12" Fill="{StaticResource SpotifyAccentColor}" Margin="2,0" RenderTransformOrigin="0.5,1">
-                                                            <Rectangle.RenderTransform>
-                                                                <ScaleTransform ScaleY="1" />
-                                                            </Rectangle.RenderTransform>
-                                                        </Rectangle>
-                                                        <Rectangle x:Name="bar2" Width="2" Height="12" Fill="{StaticResource SpotifyAccentColor}" Margin="2,0" RenderTransformOrigin="0.5,1">
-                                                            <Rectangle.RenderTransform>
-                                                                <ScaleTransform ScaleY="1" />
-                                                            </Rectangle.RenderTransform>
-                                                        </Rectangle>
-                                                        <Rectangle x:Name="bar3" Width="2" Height="12" Fill="{StaticResource SpotifyAccentColor}" Margin="2,0" RenderTransformOrigin="0.5,1">
-                                                            <Rectangle.RenderTransform>
-                                                                <ScaleTransform ScaleY="1" />
-                                                            </Rectangle.RenderTransform>
-                                                        </Rectangle>
-                                                        <Rectangle x:Name="bar5" Width="2" Height="12" Fill="{StaticResource SpotifyAccentColor}" Margin="2,0" RenderTransformOrigin="0.5,1">
-                                                            <Rectangle.RenderTransform>
-                                                                <ScaleTransform ScaleY="1" />
-                                                            </Rectangle.RenderTransform>
-                                                        </Rectangle>
-                                                        <Rectangle x:Name="bar6" Width="2" Height="12" Fill="{StaticResource SpotifyAccentColor}" Margin="2,0" RenderTransformOrigin="0.5,1">
-                                                            <Rectangle.RenderTransform>
-                                                                <ScaleTransform ScaleY="1" />
-                                                            </Rectangle.RenderTransform>
-                                                        </Rectangle>
-                                                    </StackPanel>
-                                                </Grid>
+                            <DataTemplate DataType="{x:Type local:PlaylistTrack}">
+                                <Border x:Name="PlayingTrackBorder"
+                        BorderThickness="2"
+                        BorderBrush="Transparent"
+                        CornerRadius="6"
+                        Background="Transparent"
+                        Padding="0" Margin="-4">
+                                    <i:Interaction.Triggers>
+                                        <i:EventTrigger EventName="MouseDown">
+                                            <cal:ActionMessage MethodName="ClickyPlayTrack">
+                                                <cal:Parameter Value="{Binding ID}" />
+                                            </cal:ActionMessage>
+                                        </i:EventTrigger>
+                                    </i:Interaction.Triggers>
 
-                                            </Viewbox>
+                                    <Grid Margin="4">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" MinWidth="400" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="260"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Orientation="Horizontal">
+
+                                            <Grid Height="25" Width="30" Margin="8,0,7,0" VerticalAlignment="Center" HorizontalAlignment="Left" >
+                                                <TextBlock x:Name="TrackNumberIndicator" Foreground="White" Opacity="0.7" FontSize="16"
+                                    HorizontalAlignment="Center" 
+                                    VerticalAlignment="Center" 
+                                    TextAlignment="Center"
+                                    Text="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=(ItemsControl.AlternationIndex), Converter={StaticResource AddOneConverter}}"  />
+
+                                                <Viewbox RenderOptions.BitmapScalingMode="HighQuality" RenderOptions.EdgeMode="Unspecified" Margin="5,12,5,0" StretchDirection="Both" Stretch="Fill" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                                                    <!-- Playing indicator (hidden by default). Shows animated bars when this track is the current playing track -->
+                                                    <Grid x:Name="PlayingIndicator" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Height="20">
+                                                            <Rectangle x:Name="bar1" Width="2" Height="12" Fill="{StaticResource SpotifyAccentColor}" Margin="2,0" RenderTransformOrigin="0.5,1">
+                                                                <Rectangle.RenderTransform>
+                                                                    <ScaleTransform ScaleY="1" />
+                                                                </Rectangle.RenderTransform>
+                                                            </Rectangle>
+                                                            <Rectangle x:Name="bar2" Width="2" Height="12" Fill="{StaticResource SpotifyAccentColor}" Margin="2,0" RenderTransformOrigin="0.5,1">
+                                                                <Rectangle.RenderTransform>
+                                                                    <ScaleTransform ScaleY="1" />
+                                                                </Rectangle.RenderTransform>
+                                                            </Rectangle>
+                                                            <Rectangle x:Name="bar3" Width="2" Height="12" Fill="{StaticResource SpotifyAccentColor}" Margin="2,0" RenderTransformOrigin="0.5,1">
+                                                                <Rectangle.RenderTransform>
+                                                                    <ScaleTransform ScaleY="1" />
+                                                                </Rectangle.RenderTransform>
+                                                            </Rectangle>
+                                                            <Rectangle x:Name="bar5" Width="2" Height="12" Fill="{StaticResource SpotifyAccentColor}" Margin="2,0" RenderTransformOrigin="0.5,1">
+                                                                <Rectangle.RenderTransform>
+                                                                    <ScaleTransform ScaleY="1" />
+                                                                </Rectangle.RenderTransform>
+                                                            </Rectangle>
+                                                            <Rectangle x:Name="bar6" Width="2" Height="12" Fill="{StaticResource SpotifyAccentColor}" Margin="2,0" RenderTransformOrigin="0.5,1">
+                                                                <Rectangle.RenderTransform>
+                                                                    <ScaleTransform ScaleY="1" />
+                                                                </Rectangle.RenderTransform>
+                                                            </Rectangle>
+                                                        </StackPanel>
+                                                    </Grid>
+
+                                                </Viewbox>
+                                            </Grid>
+
+
+                                            <Image Source="{Binding Thumbnail}"
+                                   Width="40"
+                                   Height="40"
+                                   Margin="4,0,10,0" />
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding FileName}"
+                                           FontSize="16"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource PlaylistTextBrush}"/>
+                                                <TextBlock Text="{Binding FilePath}"
+                                           FontSize="11"
+                                           Style="{StaticResource PlaylistFilePathStyle}"
+                                           TextTrimming="CharacterEllipsis"/>
+                                            </StackPanel>
+                                        </StackPanel>
+
+                                        <Grid Grid.Column="1">
+                                            <TextBlock Text="{Binding Artist}" FontSize="15"
+                                       Foreground="White" Opacity="0.7"
+                                       HorizontalAlignment="Left"
+                                       VerticalAlignment="Center" />
                                         </Grid>
 
+                                        <Grid Grid.Column="2">
+                                            <StackPanel Orientation="Horizontal"
+Grid.Column="2"
+HorizontalAlignment="Right"
+VerticalAlignment="Center">
 
-                                        <Image Source="{Binding Thumbnail}"
-                                               Width="40"
-                                               Height="40"
-                                               Margin="4,0,10,0" />
-                                        <StackPanel>
-                                            <TextBlock Text="{Binding FileName}"
-                                                       FontSize="16"
-                                                       FontWeight="SemiBold"
-                                                       Foreground="{StaticResource PlaylistTextBrush}"/>
-                                            <TextBlock Text="{Binding FilePath}"
-                                                       FontSize="11"
-                                                       Style="{StaticResource PlaylistFilePathStyle}"
-                                                       TextTrimming="CharacterEllipsis"/>
-                                        </StackPanel>
-                                    </StackPanel>
+                                                <TextBlock Text="{Binding Duration}" FontSize="15"
+   Foreground="White"
+   Margin="0,0,20,0" />
 
-                                    <Grid Grid.Column="1">
-                                        <TextBlock Text="{Binding Artist}" FontSize="15"
-                                                   Foreground="White" Opacity="0.7"
-                                                   HorizontalAlignment="Left"
-                                                   VerticalAlignment="Center" />
+                                                <Button TextBlock.Foreground="SlateGray" Content="↻" TextBlock.FontSize="17" Margin="0,0,20,0">
+                                                    <i:Interaction.Triggers>
+                                                        <i:EventTrigger EventName="Click">
+                                                            <cal:ActionMessage MethodName="ReGenTrack">
+                                                                <cal:Parameter Value="{Binding ID}" />
+                                                            </cal:ActionMessage>
+                                                        </i:EventTrigger>
+                                                    </i:Interaction.Triggers>
+                                                </Button>
+
+                                                <!--
+                                <ToggleButton x:Name="CrossFadeToggle" Margin="4,0,4,0" Style="{StaticResource CrossFadeToggleStyle}"
+      IsChecked="{Binding FadeInOnCross, Mode=TwoWay}">
+                                    <TextBlock Text="FADE" />
+                                </ToggleButton>
+                                -->
+
+                                                <Button Content="-" Margin="3,0,3,0">
+                                                    <i:Interaction.Triggers>
+                                                        <i:EventTrigger EventName="Click">
+                                                            <cal:ActionMessage MethodName="Minus">
+                                                                <cal:Parameter Value="{Binding ID}" />
+                                                            </cal:ActionMessage>
+                                                        </i:EventTrigger>
+                                                    </i:Interaction.Triggers>
+                                                </Button>
+                                                <Border Width="40" Background="{StaticResource ControlSurfaceBrush}"
+CornerRadius="4"
+Padding="6,2">
+                                                    <TextBlock HorizontalAlignment="Center" TextAlignment="Center" FontSize="13"
+Text="{Binding GapSeconds, StringFormat={}{0:+0.##;-0.##;0}s}"
+       Foreground="White"
+       FontWeight="SemiBold"/>
+                                                </Border>
+                                                <Button Content="+" Margin="3,0,3,0">
+                                                    <i:Interaction.Triggers>
+                                                        <i:EventTrigger EventName="Click">
+                                                            <cal:ActionMessage MethodName="Plus">
+                                                                <cal:Parameter Value="{Binding ID}" />
+                                                            </cal:ActionMessage>
+                                                        </i:EventTrigger>
+                                                    </i:Interaction.Triggers>
+                                                </Button>
+
+                                                <Button Content="⨉" Margin="20,0,4,0">
+                                                    <i:Interaction.Triggers>
+                                                        <i:EventTrigger EventName="Click">
+                                                            <cal:ActionMessage MethodName="RemoveTrack">
+                                                                <cal:Parameter Value="{Binding ID}" />
+                                                            </cal:ActionMessage>
+                                                        </i:EventTrigger>
+                                                    </i:Interaction.Triggers>
+                                                </Button>
+
+                                            </StackPanel>
+                                        </Grid>
+
                                     </Grid>
+                                </Border>
+                                <DataTemplate.Triggers>
+                                    <DataTrigger Value="True">
+                                        <DataTrigger.Binding>
+                                            <MultiBinding Converter="{StaticResource GuidEqualityConverter}">
+                                                <Binding Path="ID"/>
+                                                <Binding Path="DataContext.CurrentPlayingTrackId" RelativeSource="{RelativeSource AncestorType=ListBox}"/>
+                                            </MultiBinding>
+                                        </DataTrigger.Binding>
+                                        <Setter TargetName="PlayingTrackBorder" Property="BorderThickness" Value="2"/>
+                                        <Setter TargetName="PlayingTrackBorder" Property="BorderBrush" Value="{StaticResource SpotifyAccentColor}"/>
+                                        <Setter TargetName="PlayingIndicator" Property="Visibility" Value="Visible"/>
+                                        <Setter TargetName="TrackNumberIndicator" Property="Visibility" Value="Collapsed"/>
+                                        <DataTrigger.EnterActions>
+                                            <BeginStoryboard x:Name="PlayBarsBegin">
+                                                <Storyboard RepeatBehavior="Forever">
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="bar1" Storyboard.TargetProperty="(Rectangle.RenderTransform).(ScaleTransform.ScaleY)" Duration="0:0:0.8">
+                                                        <SplineDoubleKeyFrame KeyTime="0:0:0"   Value="1"   />
+                                                        <SplineDoubleKeyFrame KeyTime="0:0:0.1" Value="1.2" />
+                                                        <SplineDoubleKeyFrame KeyTime="0:0:0.3" Value="1.8" />
+                                                        <SplineDoubleKeyFrame KeyTime="0:0:0.4" Value="2"   />
+                                                        <SplineDoubleKeyFrame KeyTime="0:0:0.5" Value="1.8" />
+                                                        <SplineDoubleKeyFrame KeyTime="0:0:0.7" Value="1.2" />
+                                                        <SplineDoubleKeyFrame KeyTime="0:0:0.8" Value="1"   />
+                                                    </DoubleAnimationUsingKeyFrames>
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="bar2" Storyboard.TargetProperty="(Rectangle.RenderTransform).(ScaleTransform.ScaleY)" Duration="0:0:0.8" BeginTime="0:0:0.0">
+                                                        <SplineDoubleKeyFrame KeyTime="0:0:0"   Value="1.2" />
+                                                        <SplineDoubleKeyFrame KeyTime="0:0:0.1" Value="1"   />
+                                                        <SplineDoubleKeyFrame KeyTime="0:0:0.3" Value="1.2" />
+                                                        <SplineDoubleKeyFrame KeyTime="0:0:0.4" Value="1.8" />
+                                                        <SplineDoubleKeyFrame KeyTime="0:0:0.5" Value="2"   />
+                                                        <SplineDoubleKeyFrame KeyTime="0:0:0.7" Value="1.8" />
+                                                        <SplineDoubleKeyFrame KeyTime="0:0:0.8" Value="1.2" />
+                                                    </DoubleAnimationUsingKeyFrames>
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="bar3" Storyboard.TargetProperty="(Rectangle.RenderTransform).(ScaleTransform.ScaleY)" Duration="0:0:0.8" BeginTime="0:0:0.0">
+                                                        <SplineDoubleKeyFrame KeyTime="0:0:0"   Value="1.8"   />
+                                                        <SplineDoubleKeyFrame KeyTime="0:0:0.1" Value="1.2" />
+                                                        <SplineDoubleKeyFrame KeyTime="0:0:0.3" Value="1"   />
+                                                        <SplineDoubleKeyFrame KeyTime="0:0:0.4" Value="1.2" />
+                                                        <SplineDoubleKeyFrame KeyTime="0:0:0.5" Value="1.8" />
+                                                        <SplineDoubleKeyFrame KeyTime="0:0:0.7" Value="2"   />
+                                                        <SplineDoubleKeyFrame KeyTime="0:0:0.8" Value="1.8" />
+                                                    </DoubleAnimationUsingKeyFrames>
 
-                                    <Grid Grid.Column="2">
-                                        <StackPanel Orientation="Horizontal"
-            Grid.Column="2"
-            HorizontalAlignment="Right"
-            VerticalAlignment="Center">
-
-                                            <TextBlock Text="{Binding Duration}" FontSize="15"
-               Foreground="White"
-               Margin="0,0,20,0" />
-
-                                            <Button TextBlock.Foreground="SlateGray" Content="↻" TextBlock.FontSize="17" Margin="0,0,20,0">
-                                                <i:Interaction.Triggers>
-                                                    <i:EventTrigger EventName="Click">
-                                                        <cal:ActionMessage MethodName="ReGenTrack">
-                                                            <cal:Parameter Value="{Binding ID}" />
-                                                        </cal:ActionMessage>
-                                                    </i:EventTrigger>
-                                                </i:Interaction.Triggers>
-                                            </Button>
-
-                                            <!--
-                                            <ToggleButton x:Name="CrossFadeToggle" Margin="4,0,4,0" Style="{StaticResource CrossFadeToggleStyle}"
-                  IsChecked="{Binding FadeInOnCross, Mode=TwoWay}">
-                                                <TextBlock Text="FADE" />
-                                            </ToggleButton>
-                                            -->
-
-                                            <Button Content="-" Margin="3,0,3,0">
-                                                <i:Interaction.Triggers>
-                                                    <i:EventTrigger EventName="Click">
-                                                        <cal:ActionMessage MethodName="Minus">
-                                                            <cal:Parameter Value="{Binding ID}" />
-                                                        </cal:ActionMessage>
-                                                    </i:EventTrigger>
-                                                </i:Interaction.Triggers>
-                                            </Button>
-                                            <Border Width="40" Background="{StaticResource ControlSurfaceBrush}"
-            CornerRadius="4"
-            Padding="6,2">
-                                                <TextBlock HorizontalAlignment="Center" TextAlignment="Center" FontSize="13"
-            Text="{Binding GapSeconds, StringFormat={}{0:+0.##;-0.##;0}s}"
-                   Foreground="White"
-                   FontWeight="SemiBold"/>
-                                            </Border>
-                                            <Button Content="+" Margin="3,0,3,0">
-                                                <i:Interaction.Triggers>
-                                                    <i:EventTrigger EventName="Click">
-                                                        <cal:ActionMessage MethodName="Plus">
-                                                            <cal:Parameter Value="{Binding ID}" />
-                                                        </cal:ActionMessage>
-                                                    </i:EventTrigger>
-                                                </i:Interaction.Triggers>
-                                            </Button>
-
-                                            <Button Content="⨉" Margin="20,0,4,0">
-                                                <i:Interaction.Triggers>
-                                                    <i:EventTrigger EventName="Click">
-                                                        <cal:ActionMessage MethodName="RemoveTrack">
-                                                            <cal:Parameter Value="{Binding ID}" />
-                                                        </cal:ActionMessage>
-                                                    </i:EventTrigger>
-                                                </i:Interaction.Triggers>
-                                            </Button>
-
-                                        </StackPanel>
-                                    </Grid>
-
-                                </Grid>
-                            </Border>
-                            <DataTemplate.Triggers>
-                                <DataTrigger Value="True">
-                                    <DataTrigger.Binding>
-                                        <MultiBinding Converter="{StaticResource GuidEqualityConverter}">
-                                            <Binding Path="ID"/>
-                                            <Binding Path="DataContext.CurrentPlayingTrackId" RelativeSource="{RelativeSource AncestorType=ListBox}"/>
-                                        </MultiBinding>
-                                    </DataTrigger.Binding>
-                                    <Setter TargetName="PlayingTrackBorder" Property="BorderThickness" Value="2"/>
-                                    <Setter TargetName="PlayingTrackBorder" Property="BorderBrush" Value="{StaticResource SpotifyAccentColor}"/>
-                                    <Setter TargetName="PlayingIndicator" Property="Visibility" Value="Visible"/>
-                                    <Setter TargetName="TrackNumberIndicator" Property="Visibility" Value="Collapsed"/>
-                                    <DataTrigger.EnterActions>
-                                        <BeginStoryboard x:Name="PlayBarsBegin">
-                                            <Storyboard RepeatBehavior="Forever">
-                                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="bar1" Storyboard.TargetProperty="(Rectangle.RenderTransform).(ScaleTransform.ScaleY)" Duration="0:0:0.8">
-                                                    <SplineDoubleKeyFrame KeyTime="0:0:0"   Value="1"   />
-                                                    <SplineDoubleKeyFrame KeyTime="0:0:0.1" Value="1.2" />
-                                                    <SplineDoubleKeyFrame KeyTime="0:0:0.3" Value="1.8" />
-                                                    <SplineDoubleKeyFrame KeyTime="0:0:0.4" Value="2"   />
-                                                    <SplineDoubleKeyFrame KeyTime="0:0:0.5" Value="1.8" />
-                                                    <SplineDoubleKeyFrame KeyTime="0:0:0.7" Value="1.2" />
-                                                    <SplineDoubleKeyFrame KeyTime="0:0:0.8" Value="1"   />
-                                                </DoubleAnimationUsingKeyFrames>
-                                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="bar2" Storyboard.TargetProperty="(Rectangle.RenderTransform).(ScaleTransform.ScaleY)" Duration="0:0:0.8" BeginTime="0:0:0.0">
-                                                    <SplineDoubleKeyFrame KeyTime="0:0:0"   Value="1.2" />
-                                                    <SplineDoubleKeyFrame KeyTime="0:0:0.1" Value="1"   />
-                                                    <SplineDoubleKeyFrame KeyTime="0:0:0.3" Value="1.2" />
-                                                    <SplineDoubleKeyFrame KeyTime="0:0:0.4" Value="1.8" />
-                                                    <SplineDoubleKeyFrame KeyTime="0:0:0.5" Value="2"   />
-                                                    <SplineDoubleKeyFrame KeyTime="0:0:0.7" Value="1.8" />
-                                                    <SplineDoubleKeyFrame KeyTime="0:0:0.8" Value="1.2" />
-                                                </DoubleAnimationUsingKeyFrames>
-                                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="bar3" Storyboard.TargetProperty="(Rectangle.RenderTransform).(ScaleTransform.ScaleY)" Duration="0:0:0.8" BeginTime="0:0:0.0">
-                                                    <SplineDoubleKeyFrame KeyTime="0:0:0"   Value="1.8"   />
-                                                    <SplineDoubleKeyFrame KeyTime="0:0:0.1" Value="1.2" />
-                                                    <SplineDoubleKeyFrame KeyTime="0:0:0.3" Value="1"   />
-                                                    <SplineDoubleKeyFrame KeyTime="0:0:0.4" Value="1.2" />
-                                                    <SplineDoubleKeyFrame KeyTime="0:0:0.5" Value="1.8" />
-                                                    <SplineDoubleKeyFrame KeyTime="0:0:0.7" Value="2"   />
-                                                    <SplineDoubleKeyFrame KeyTime="0:0:0.8" Value="1.8" />
-                                                </DoubleAnimationUsingKeyFrames>
-
-                                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="bar5" Storyboard.TargetProperty="(Rectangle.RenderTransform).(ScaleTransform.ScaleY)" Duration="0:0:0.8" BeginTime="0:0:0.0">
-                                                    <SplineDoubleKeyFrame KeyTime="0:0:0"   Value="1.8"   />
-                                                    <SplineDoubleKeyFrame KeyTime="0:0:0.1" Value="2"   />
-                                                    <SplineDoubleKeyFrame KeyTime="0:0:0.3" Value="1.8" />
-                                                    <SplineDoubleKeyFrame KeyTime="0:0:0.4" Value="1.2" />
-                                                    <SplineDoubleKeyFrame KeyTime="0:0:0.5" Value="1"   />
-                                                    <SplineDoubleKeyFrame KeyTime="0:0:0.7" Value="1.2" />
-                                                    <SplineDoubleKeyFrame KeyTime="0:0:0.8" Value="1.8" />
-                                                </DoubleAnimationUsingKeyFrames>
-                                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="bar6" Storyboard.TargetProperty="(Rectangle.RenderTransform).(ScaleTransform.ScaleY)" Duration="0:0:0.8" BeginTime="0:0:0.0">
-                                                    <SplineDoubleKeyFrame KeyTime="0:0:0"   Value="1.2"   />
-                                                    <SplineDoubleKeyFrame KeyTime="0:0:0.1" Value="1.8"  />
-                                                    <SplineDoubleKeyFrame KeyTime="0:0:0.3" Value="2"    />
-                                                    <SplineDoubleKeyFrame KeyTime="0:0:0.4" Value="1.8"  />
-                                                    <SplineDoubleKeyFrame KeyTime="0:0:0.5" Value="1.2"  />
-                                                    <SplineDoubleKeyFrame KeyTime="0:0:0.7" Value="1"    />
-                                                    <SplineDoubleKeyFrame KeyTime="0:0:0.8" Value="1.2"  />
-                                                </DoubleAnimationUsingKeyFrames>
-                                            </Storyboard>
-                                        </BeginStoryboard>
-                                    </DataTrigger.EnterActions>
-                                    <DataTrigger.ExitActions>
-                                        <StopStoryboard BeginStoryboardName="PlayBarsBegin" />
-                                    </DataTrigger.ExitActions>
-                                </DataTrigger>
-                            </DataTemplate.Triggers>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="bar5" Storyboard.TargetProperty="(Rectangle.RenderTransform).(ScaleTransform.ScaleY)" Duration="0:0:0.8" BeginTime="0:0:0.0">
+                                                        <SplineDoubleKeyFrame KeyTime="0:0:0"   Value="1.8"   />
+                                                        <SplineDoubleKeyFrame KeyTime="0:0:0.1" Value="2"   />
+                                                        <SplineDoubleKeyFrame KeyTime="0:0:0.3" Value="1.8" />
+                                                        <SplineDoubleKeyFrame KeyTime="0:0:0.4" Value="1.2" />
+                                                        <SplineDoubleKeyFrame KeyTime="0:0:0.5" Value="1"   />
+                                                        <SplineDoubleKeyFrame KeyTime="0:0:0.7" Value="1.2" />
+                                                        <SplineDoubleKeyFrame KeyTime="0:0:0.8" Value="1.8" />
+                                                    </DoubleAnimationUsingKeyFrames>
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="bar6" Storyboard.TargetProperty="(Rectangle.RenderTransform).(ScaleTransform.ScaleY)" Duration="0:0:0.8" BeginTime="0:0:0.0">
+                                                        <SplineDoubleKeyFrame KeyTime="0:0:0"   Value="1.2"   />
+                                                        <SplineDoubleKeyFrame KeyTime="0:0:0.1" Value="1.8"  />
+                                                        <SplineDoubleKeyFrame KeyTime="0:0:0.3" Value="2"    />
+                                                        <SplineDoubleKeyFrame KeyTime="0:0:0.4" Value="1.8"  />
+                                                        <SplineDoubleKeyFrame KeyTime="0:0:0.5" Value="1.2"  />
+                                                        <SplineDoubleKeyFrame KeyTime="0:0:0.7" Value="1"    />
+                                                        <SplineDoubleKeyFrame KeyTime="0:0:0.8" Value="1.2"  />
+                                                    </DoubleAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </DataTrigger.EnterActions>
+                                        <DataTrigger.ExitActions>
+                                            <StopStoryboard BeginStoryboardName="PlayBarsBegin" />
+                                        </DataTrigger.ExitActions>
+                                    </DataTrigger>
+                                </DataTemplate.Triggers>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+                
             </Grid>
 
 
